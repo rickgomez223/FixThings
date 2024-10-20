@@ -4,12 +4,72 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>replit</title>
+  <title>Kyles Auto Shop</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-  Hello world
+  <h1>Kyles Auto Shop</h1>
+  <p>I offer a wide range of services to keep your car running smoothly.</p>
+  <h2>Services</h2>
+  <ul class="serviceList" id="services-list"></ul>
+	
+  <h2>Pricing</h2>
+  
+	<p>Pricing Does Not Include Parts.</p>
+	<p><strong><em>All Parts Must Be Supplied By The Customer.</em></strong></p>
+	<p>For <strong>LABOR ONLY</strong> pricing information, please see the table below.</p>
+	
+  <table class="pricingSheet" id="pricing-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Price</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <div class="servicePopup hidden" id="service-details-popup">
+    <div class="popup-content">
+      <span class="close-button">&times;</span>
+      <h2></h2>
+      <p>Description:</p>
+      <p></p>
+      <h3>Expenses</h3>
+      <ul></ul>
+    </div>
+  </div>
+  
+  <div class="contactMe">
+    <h2>Contact</h2>
+    <p>For bookings or inquiries, please contact us at:</p>
+    <p>Email: <a href="mailto:kyle@mail.devthings.pro">kyle@mail.devthings.pro</a></p>
+  </div>
+
+  <div class="contactForm hidden">
+    <h2>Book a Service</h2>
+    <form id="booking-form">
+      <label for="car-info">Car Information:</label><br>
+      <input type="text" id="car-make" name="car-make" placeholder="Make" required><br>
+      <input type="text" id="car-model" name="car-model" placeholder="Model" required><br>
+      <input type="number" id="car-year" name="car-year" placeholder="Year" required><br>
+      <label for="service">Service:</label><br>
+      <select id="service" name="service" required>
+        <option value="">Select Service</option>
+      </select><br>
+      <label for="comments">Comments:</label><br>
+      <textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea><br>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+  
+  <footer>
+    <p>&copy; 2023 Kyles Auto Shop. All rights reserved.</p>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 
