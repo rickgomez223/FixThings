@@ -8,15 +8,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-window.onload = function() {
-  log('info', 'Window Load');
-  try {
-    log('info', 'Call To Start App');
-    app();
-  } catch (error) {
-    log('error', 'Call To Start App Failed');
-  }
-};
+// window.onload = function() {
+//   log('info', 'Window Load');
+//   try {
+//     log('info', 'Call To Start App');
+//     app();
+//   } catch (error) {
+//     log('error', 'Call To Start App Failed');
+//   }
+// };
 
 function app() {
   log('info', 'App Started');
