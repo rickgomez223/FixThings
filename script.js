@@ -1,3 +1,13 @@
+document.addEventListener('DOMContentLoaded', function() {
+  log('info', 'DOMContentLoaded');
+  try {
+    log('info', 'Call To Start App');
+    app();
+  } catch (error) {
+    log('error', 'Call To Start App Failed');
+  }
+});
+
 window.onload = function() {
   log('info', 'Window Load');
   try {
