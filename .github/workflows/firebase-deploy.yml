@@ -21,9 +21,6 @@ jobs:
       - name: Install npm (Latest)
         run: npm install -g npm@latest  # Update npm to the latest version
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Install Firebase CLI
         run: npm install -g firebase-tools@latest  # Install the latest Firebase CLI
 
