@@ -1,41 +1,247 @@
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/*            Root          */
+/**/
+/**/
+* { 
+	margin: auto;
+	padding: 0;
+	box-sizing: border-box;
+}
 html {
   height: 100%;
   width: 100%;
 }
 
+h1 {
+  font-size: 2rem; 
+}
+
+h2 {
+  font-size: 1.75rem; 
+}
+
+h3 {
+  font-size: 1.5rem; 
+}
+
+p {
+  font-size: 1rem; 
+}
+body {
+	height: auto;
+	width: auto;
+	padding-left: 10px;
+	padding-right: 10px;
+	margin: auto;
+}
+/**/
+/**/
+/**/
+/**/
+/**/
+/*     Variables And Reusable Classes     */
+/**/
+/**/
+/**/
+/**/
+/**/
+.hidden {
+	height: auto;
+	width: auto;
+  display: none;
+}
+/**/
+/**/
+/**/
+/**/
+/**/
+/*          Everything Should Be Chronological         */
+/**/
+/**/
+.nav {
+	height: auto;
+	width: 100%;
+	text-align: center;
+	top: 0; 
+	left: 0;
+	right: 0;
+  position: sticky; 
+  z-index: 1000;
+	background-color: white;
+	padding: 10px;
+}
+.nav>h1 {
+	height: auto;
+	width: auto;
+}
+.homeSection {
+	height: auto;
+	width: 100%;
+	padding: 10px;
+}
+.welcome {
+	height: auto;
+	width: 100%;
+}
+/**/
+/* Carousel */
+/**/
+.carousel-container {
+	height: auto;
+	width: 100%;
+	text-align: center;
+	/* align-content: center; */
+  overflow: hidden;
+}
+
+.carousel-slide {
+	height: auto;
+	width: 400%;
+  display: flex;
+  transition: transform 0.4s ease-in-out;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#prevBtn {
+  left: 10px;
+}
+
+#nextBtn {
+  right: 10px;
+}
+/**/
+/**/
+/**/
+/**/
+/**/
+.aboutMe {
+	height: auto;
+	width: auto;
+}
+.aboutMe>h2 {
+	height: auto;
+	width: auto;
+}
+.aboutMeTxt {
+	height: auto;
+	width: auto;	
+}
+.servicesSection {
+	height: auto;
+	width: 100%;
+	padding: 10px;
+}
+.servicesSection>h2 {
+	height: auto;
+	width: auto;
+}
+.services {
+	height: auto;
+	width: auto;
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping to new rows */
+  justify-content: space-between; /* Space items evenly */
+}
+
+.serviceList {
+	height: auto;
+	width: auto;
+	list-style-type: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap; /* Allow items to wrap to the next row */
+  justify-content: space-between;
+}
+
+.serviceList li {
+	height: auto;
+	width: auto;
+  flex: 1 1 calc(50% - 10px); /* 50% width with space for gaps */
+  margin-bottom: 10px; /* Space between rows */
+  box-sizing: border-box; /* Include padding and border in width */
+	color: green;
+}
+
+.servicesImg {
+	height: auto;
+	width: auto;
+  max-width: 250px; /* Limit max width */
+}
+.pricing {
+	height: auto;
+	width: auto;
+	padding: 10px;
+}
+.pricing>h2 {
+	height: auto;
+	width: auto;
+}
+.pricingtxt {
+	height: auto;
+	width: auto;
+}
+.manualPricingTxt {
+	height: auto;
+	width: auto;
+}
+.manualPricingTxt>p {
+	height: auto;
+	width: auto;
+}
 .pricingSheet {
-  margin-top: 20px; /* Add some spacing */
+  height: auto;
+	width: auto;
   border: 1px solid lightgray; /* Add a light gray border */
   padding: 10px; /* Add padding */
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Add an inset box shadow */
 }
-
 .pricingSheet tr:nth-child(even) {
+	height: auto;
+	width: auto;
   background-color: lightgray;
 }
-
 .pricingSheet a {
+	height: auto;
+	width: auto;
   /* Style the anchor tags inside the table */
   text-decoration: none; /* Remove the default underline */
-  color: blue; /* Set the link color */
+  color: green; /* Set the link color */
   font-weight: bold; /* Make the link text bold */
   cursor: pointer; /* Change the cursor to a pointer */
 }
 .pricingSheet a:hover {
+	height: auto;
+	width: auto;
   /* Style the link on hover */
   color: darkblue; /* Change the color on hover */
   text-decoration: underline; /* Add an underline on hover */
 }
-
-
-.serviceList {
-  list-style-type: none;
-  padding: 0;
-}
-.serviceList li {
-  margin-bottom: 10px;
-}
 .servicePopup {
+	height: auto;
+	width: auto;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -46,33 +252,37 @@ html {
   padding: 20px;
   width: 300px;
   z-index: 10;
-  
-  
 }
-
-.servicePopup h2, 
-.servicePopup p {
-  text-align: center;
+.popup-content { 
+	height: auto;
+	width: auto;
 }
-
-
-.hidden {
-  display: none;
-}
-
-
 .close-button {
+	height: auto;
+	width: auto;
   position: absolute;
   top: 10px;
   right: 10px;
   cursor: pointer;
   font-size: 18px;
 }
-
+.popup-content>h2, 
+.popup-content>p,
+.popup-content>h3 {
+	height: auto;
+	width: auto;
+  text-align: center;
+}
 .servicePopup.hidden {
+	height: auto;
+	width: auto;
   pointer-events: none; /* Disable pointer events when hidden */
 }
-
+.contactMe {
+	height: auto;
+	width: auto;
+	padding: 10px;
+}
 footer {
   background-color: #f0f0f0;
   padding: 20px;

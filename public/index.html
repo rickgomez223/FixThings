@@ -1,54 +1,83 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>Kyles Auto Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>KMS</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
-
 <body>
-  <h1>Kyles Auto Shop</h1>
-  <p>I offer a wide range of services to keep your car running smoothly.</p>
-  <h2>Services</h2>
-  <ul class="serviceList" id="services-list"></ul>
-	
-  <h2>Pricing</h2>
-  
-	<p>Pricing Does Not Include Parts.</p>
-	<p><strong><em>All Parts Must Be Supplied By The Customer.</em></strong></p>
-	<p>For <strong>LABOR ONLY</strong> pricing information, please see the table below.</p>
-	
-  <table class="pricingSheet" id="pricing-table">
-    <thead>
-      <tr>
-        <th>Service</th>
-        <th>Price</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
+	<nav class="nav">
+		<h1>Kyle's Mechanic Shop</h1>
+	</nav>
+	<section class="homeSection">
+		<div class="welcome">
+		
+			<div class="carousel-container hidden">
+		    <div class="carousel-slide">
+		      <img src="image1.jpg" alt="Shop&Equipment 1">
+		      <img src="image2.jpg" alt="Shop&Equipment 2">
+		      <img src="image3.jpg" alt="Shop&Equipment 3">
+		      <img src="image4.jpg" alt="Shop&Equipment 4">
+		    </div>
+		  </div> 
+		
+		 	<!-- 
+			<button id="prevBtn">Prev</button>
+		  <button id="nextBtn">Next</button>
+			-->
+		</div>
+		<div class="aboutMe" id="aboutMe">
+			<h2>About Me</h2>
+			<p class="aboutMeTxt" id="aboutMeTxt"></p>
+		</div>
+	</section>
+  <section class="servicesSection">
+		<h2>Services</h2>
+		<div class="services" id="services" >
+    <ul class="serviceList" id="services-list"></ul>
+   
+		 <img class="servicesImg hidden" src="image.jpg" alt="PersonalCarWork"/>  
+		 
 
-  <div class="servicePopup hidden" id="service-details-popup">
-    <div class="popup-content">
-      <span class="close-button">&times;</span>
-      <h2></h2>
-      <p>Description:</p>
-      <p></p>
-      <h3>Expenses</h3>
-      <ul></ul>
-    </div>
   </div>
-  
+  </section>
+	<section class="pricing">
+		<h2>Pricing</h2>
+	  <p class="pricingTxt" id="pricingTxt"></p>
+		<div class="manualPricingTxt">
+			<p>Pricing Does Not Include Parts.</p>
+	  	<p><strong><em>All Parts Must Be Supplied By The Customer.</em></strong></p>
+	  	<p>For <strong>LABOR ONLY</strong> pricing information, please see the table below.</p>
+		</div>
+	  <table class="pricingSheet" id="pricing-table">
+	    <thead>
+	      <tr>
+	        <th>Service</th>
+	        <th>Price</th>
+	        <th>Description</th>
+	      </tr>
+	    </thead>
+	    <tbody>
+	    </tbody>
+	  </table>
+	  <div class="servicePopup hidden" id="service-details-popup">
+	    <div class="popup-content">
+	      <span class="close-button">&times;</span>
+	      <h2></h2>
+	      <p>Description:</p>
+	      <p></p>
+	      <h3>Expenses</h3>
+	      <ul></ul>
+	    </div>
+	  </div>
+	</section>
   <div class="contactMe">
     <h2>Contact</h2>
     <p>For bookings or inquiries, please contact us at:</p>
-    <p>Email: <a href="mailto:kyle@mail.devthings.pro">kyle@mail.devthings.pro</a></p>
+    <p>Email: <em><strong>Coming Soon!</strong></em></p>
+    <!--     <p>Email: <a href="mailto:kyle@mail.devthings.pro">kyle@mail.devthings.pro</a></p> -->
   </div>
-
   <div class="contactForm hidden">
     <h2>Book a Service</h2>
     <form id="booking-form">
@@ -65,12 +94,9 @@
       <button type="submit">Submit</button>
     </form>
   </div>
-  
   <footer>
-    <p>&copy; 2023 Kyles Auto Shop. All rights reserved.</p>
+    <p>&copy; 2023 Kyle's Auto Shop. All rights reserved.</p>
   </footer>
-
   <script src="./script.js"></script>
 </body>
-
 </html>
