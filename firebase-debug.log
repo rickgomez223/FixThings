@@ -1,0 +1,147 @@
+[debug] [2024-10-22T01:03:57.478Z] ----------------------------------------------------------------------
+[debug] [2024-10-22T01:03:57.480Z] Command:       /nix/store/alik5i1lm5kfm61fh3pg221czk7pmv4g-nodejs-20.16.0/bin/node /home/runner/workspace/.config/npm/node_global/bin/firebase init hosting:github
+[debug] [2024-10-22T01:03:57.481Z] CLI Version:   13.22.1
+[debug] [2024-10-22T01:03:57.481Z] Platform:      linux
+[debug] [2024-10-22T01:03:57.481Z] Node Version:  v20.16.0
+[debug] [2024-10-22T01:03:57.481Z] Time:          Tue Oct 22 2024 01:03:57 GMT+0000 (Coordinated Universal Time)
+[debug] [2024-10-22T01:03:57.481Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-10-22T01:03:57.575Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-10-22T01:03:57.576Z] > authorizing via signed-in user (rickgomez223@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/runner/workspace
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-10-22T01:03:57.579Z] Using project from CLI flag: fixthings-db8b0
+[debug] [2024-10-22T01:03:57.580Z] Checked if tokens are valid: true, expires at: 1729561085919
+[debug] [2024-10-22T01:03:57.580Z] Checked if tokens are valid: true, expires at: 1729561085919
+[debug] [2024-10-22T01:03:57.581Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 [none]
+[debug] [2024-10-22T01:03:57.714Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 200
+[debug] [2024-10-22T01:03:57.714Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 {"projectId":"fixthings-db8b0","projectNumber":"829720853067","displayName":"FixThings","name":"projects/fixthings-db8b0","resources":{"hostingSite":"fixthings-db8b0","realtimeDatabaseInstance":"fixthings-db8b0-default-rtdb","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_90c976ef-03df-46f8-8387-7cd2f8ac041d"}
+[info] i  Using project fixthings-db8b0 (FixThings) 
+[info] 
+=== Hosting:github Setup
+[info] 
+[info] i  Detected a .git folder at /home/runner/workspace 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=661494877&redirect_uri=http%3A%2F%2Flocalhost%3A9005&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
+[debug] [2024-10-22T01:08:25.702Z] ----------------------------------------------------------------------
+[debug] [2024-10-22T01:08:25.704Z] Command:       /nix/store/alik5i1lm5kfm61fh3pg221czk7pmv4g-nodejs-20.16.0/bin/node /home/runner/workspace/.config/npm/node_global/bin/firebase init hosting:github
+[debug] [2024-10-22T01:08:25.704Z] CLI Version:   13.22.1
+[debug] [2024-10-22T01:08:25.705Z] Platform:      linux
+[debug] [2024-10-22T01:08:25.705Z] Node Version:  v20.16.0
+[debug] [2024-10-22T01:08:25.705Z] Time:          Tue Oct 22 2024 01:08:25 GMT+0000 (Coordinated Universal Time)
+[debug] [2024-10-22T01:08:25.705Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-10-22T01:08:25.786Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-10-22T01:08:25.787Z] > authorizing via signed-in user (rickgomez223@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/runner/workspace
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-10-22T01:08:25.790Z] Using project from CLI flag: fixthings-db8b0
+[debug] [2024-10-22T01:08:25.791Z] Checked if tokens are valid: true, expires at: 1729561085919
+[debug] [2024-10-22T01:08:25.792Z] Checked if tokens are valid: true, expires at: 1729561085919
+[debug] [2024-10-22T01:08:25.794Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 [none]
+[debug] [2024-10-22T01:08:25.916Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 200
+[debug] [2024-10-22T01:08:25.916Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 {"projectId":"fixthings-db8b0","projectNumber":"829720853067","displayName":"FixThings","name":"projects/fixthings-db8b0","resources":{"hostingSite":"fixthings-db8b0","realtimeDatabaseInstance":"fixthings-db8b0-default-rtdb","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_90c976ef-03df-46f8-8387-7cd2f8ac041d"}
+[info] i  Using project fixthings-db8b0 (FixThings) 
+[info] 
+=== Hosting:github Setup
+[info] 
+[info] i  Detected a .git folder at /home/runner/workspace 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=835273839&redirect_uri=http%3A%2F%2Flocalhost%3A9005&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
+[debug] [2024-10-22T01:11:22.997Z] ----------------------------------------------------------------------
+[debug] [2024-10-22T01:11:23.001Z] Command:       /nix/store/alik5i1lm5kfm61fh3pg221czk7pmv4g-nodejs-20.16.0/bin/node /home/runner/workspace/.config/npm/node_global/bin/firebase init hosting:github
+[debug] [2024-10-22T01:11:23.001Z] CLI Version:   13.22.1
+[debug] [2024-10-22T01:11:23.001Z] Platform:      linux
+[debug] [2024-10-22T01:11:23.001Z] Node Version:  v20.16.0
+[debug] [2024-10-22T01:11:23.002Z] Time:          Tue Oct 22 2024 01:11:23 GMT+0000 (Coordinated Universal Time)
+[debug] [2024-10-22T01:11:23.002Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-10-22T01:11:23.132Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-10-22T01:11:23.132Z] > authorizing via signed-in user (rickgomez223@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/runner/workspace
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-10-22T01:11:23.136Z] Using project from CLI flag: fixthings-db8b0
+[debug] [2024-10-22T01:11:23.137Z] Checked if tokens are valid: true, expires at: 1729561085919
+[debug] [2024-10-22T01:11:23.138Z] Checked if tokens are valid: true, expires at: 1729561085919
+[debug] [2024-10-22T01:11:23.139Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 [none]
+[debug] [2024-10-22T01:11:23.272Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 200
+[debug] [2024-10-22T01:11:23.272Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 {"projectId":"fixthings-db8b0","projectNumber":"829720853067","displayName":"FixThings","name":"projects/fixthings-db8b0","resources":{"hostingSite":"fixthings-db8b0","realtimeDatabaseInstance":"fixthings-db8b0-default-rtdb","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_90c976ef-03df-46f8-8387-7cd2f8ac041d"}
+[info] i  Using project fixthings-db8b0 (FixThings) 
+[info] 
+=== Hosting:github Setup
+[info] 
+[info] i  Detected a .git folder at /home/runner/workspace 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=188772506&redirect_uri=http%3A%2F%2Flocalhost%3A9006&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
