@@ -18,19 +18,19 @@ jobs:
         with:
           node-version: '18'  # Or the latest LTS version supported by Firebase
 
-      - name: Install npm (Latest)
-        run: npm install -g npm@latest
+      # - name: Install npm (Latest)
+      #   run: npm install -g npm@latest
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools@latest
+      # - name: Install Firebase CLI
+      #   run: npm install -g firebase-tools@latest
 
-      - name: Authenticate with Google Cloud
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}  # Use the secret key `googlelogin`
-        run: |
-          echo $GOOGLE_APPLICATION_CREDENTIALS > $HOME/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config set project your-project-id  # Replace with your Firebase project ID
+      # - name: Authenticate with Google Cloud
+      #   env:
+      #     GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}  # Use the secret key `googlelogin`
+      #   run: |
+      #     echo $GOOGLE_APPLICATION_CREDENTIALS > $HOME/gcloud-service-key.json
+      #     gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+      #     gcloud config set project your-project-id  # Replace with your Firebase project ID
 
-      - name: Deploy to Firebase
-        run: firebase deploy --only hosting  # Add other Firebase services here if needed
+      # - name: Deploy to Firebase
+      #   run: firebase deploy --only hosting  # Add other Firebase services here if needed
