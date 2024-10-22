@@ -26,9 +26,9 @@ jobs:
 
       - name: Authenticate with Google Cloud
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.googlelogin }}  # Use the secret key `googlelogin`
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}  # Use the secret key `googlelogin`
         run: |
-          echo $GOOGLE_APPLICATION_CREDENTIALS | base64 --decode > $HOME/gcloud-service-key.json
+          echo $GOOGLE_APPLICATION_CREDENTIALS > $HOME/gcloud-service-key.json
           gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
           gcloud config set project your-project-id  # Replace with your Firebase project ID
 
