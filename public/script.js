@@ -245,6 +245,56 @@ function preApp() {
     //
     //
     //
+    // Load Contact Form Info
+    //
+    //
+    const carMake = document.getElementById('car-make');
+    const carModel = document.getElementById('car-model');
+    const carYear = document.getElementById('car-year');
+
+    fetch('https://www.carqueryapi.com/api/0.3/?cmd=getMakes')
+      .then(response => response.json())
+      .then(data => {
+        data.Makes.forEach(make => {
+          let option = document.createElement('option');
+          option.value = make.make_id;
+          option.text = make.make_display;
+          carMake.appendChild(option);
+        });
+      });
+
+    carMake.addEventListener('change', () => {
+      let makeId = carMake.value;
+      fetch(`https://www.carqueryapi.com/api/0.3/?cmd=getModels&make=${makeId}`)
+        .then(response => response.json())
+        .then(data => {
+          carModel.innerHTML = '';
+          data.Models.forEach(model => {
+            let option = document.createElement('option');
+            option.value = model.model_name;
+            option.text = model.model_name;
+            carModel.appendChild(option);
+          });
+        });
+    });
+
+    carModel.addEventListener('change', () => {
+      let modelId = carModel.value;
+      fetch(`https://www.carqueryapi.com/api/0.3/?cmd=getTrims&model=${modelId}`)
+        .then(response => response.json())
+        .then(data => {
+          carYear.innerHTML = '';
+          data.Trims.forEach(trim => {
+            let option = document.createElement('option');
+            option.value = trim.model_year;
+            option.text = trim.model_year;
+            carYear.appendChild(option);
+          });
+        });
+    });
+    //
+    //
+    //
     app(); // Proceed to main app logic
   } catch (error) {
     log('warn', 'PreApp Failed'); // Log warnings if PreApp logic fails
@@ -261,6 +311,20 @@ function app() {
     //
     // Main Logic Here
     //
+    // Event Listener For Vin
+    //
+    document.getElementById('booking-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const vin = document.getElementById('vin').value;
+
+      fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);  // Handle the decoded VIN data
+          // You can use this data to pre-fill fields or send to your server.
+        });
+    });
+    
   } catch (error) {
     log('warn', 'App Failed'); // Log warning if main app fails
     log('error', error); // Log error details
