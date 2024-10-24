@@ -244,10 +244,7 @@ function preApp() {
     // Finished Loading Pricing Text
     //
     //
-    //
-    // Load Contact Form Info
-    //
-    //
+    
   
 		
     app(); // Proceed to main app logic
@@ -265,12 +262,120 @@ function app() {
   try {
     //
     // Main Logic Here
+
+   fetchServices();
+
+// contact form stuff
+const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/GetAllModelsForMakeYear/";
+async function getYears() {
+  try {
+    const response = await axios.get(`${apiEndpoint}?format=json&year=2023&make=Ford`); 
+    return response.data.Results; 
+  } catch (error) {
+    console.error("Error fetching years:", error);
+  }
+}
+async function fetchYears() {
+  const years = await getYears();
+  const yearDropdown = document.getElementById("year");
+  years.forEach(year => {
+    const option = document.createElement("option");
+    option.value = year; 
+    option.text = year;
+    yearDropdown.appendChild(option);
+  });
+}
+async function fetchMakes() {
+  const selectedYear = document.getElementById("year").value;
+  const makeDropdown = document.getElementById("make");
+  makeDropdown.innerHTML = '<option value="">Select Make</option>'; // Clear previous makes
+  try {
+    const response = await axios.get(`${apiEndpoint}?format=json&year=${selectedYear}`);
+    const makes = response.data.Results; 
+    makes.forEach(make => {
+      const option = document.createElement("option");
+      option.value = make;
+      option.text = make;
+      makeDropdown.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error fetching makes:", error);
+  }
+}
+async function fetchModels() {
+  const selectedYear = document.getElementById("year").value;
+  const selectedMake = document.getElementById("make").value;
+  const modelDropdown = document.getElementById("model");
+  modelDropdown.innerHTML = '<option value="">Select Model</option>'; // Clear previous models
+  try {
+    const response = await axios.get(`${apiEndpoint}?format=json&year=${selectedYear}&make=${selectedMake}`);
+    const models = response.data.Results;
+    models.forEach(model => {
+      const option = document.createElement("option");
+      option.value = model;
+      option.text = model;
+      modelDropdown.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error fetching models:", error);
+  }
+}
+async function fetchSubmodels() {
+  const selectedYear = document.getElementById("year").value;
+  const selectedMake = document.getElementById("make").value;
+  const selectedModel = document.getElementById("model").value;
+  const submodelDropdown = document.getElementById("submodel");
+  submodelDropdown.innerHTML = '<option value="">Select Sub-Model</option>'; // Clear previous sub-models
+  try {
+    const response = await axios.get(`${apiEndpoint}?format=json&year=${selectedYear}&make=${selectedMake}&model=${selectedModel}`);
+    const submodels = response.data.Results; // Assuming API returns sub-models as 'Results'
+    // Check if there are sub-models
+    if (submodels.length > 0) {
+      submodels.forEach(submodel => {
+        const option = document.createElement("option");
+        option.value = submodel; // Assuming sub-model value is directly the name
+        option.text = submodel;
+        submodelDropdown.appendChild(option);
+      });
+    } else {
+      // No sub-models found
+      const option = document.createElement("option");
+      option.value = "";
+      option.text = "N/A";
+      submodelDropdown.appendChild(option);
+    }
+  } catch (error) {
+    console.error("Error fetching sub-models:", error);
+  }
+}
+// Call fetchYears() to populate the year dropdown initially
+fetchYears();
     
   } catch (error) {
     log('warn', 'App Failed'); // Log warning if main app fails
     log('error', error); // Log error details
   }
 }
+
+
+async function fetchServices() {
+  try {
+    const response = await fetch('./src/services.json');
+    const services = await response.json();
+    const serviceDropdown = document.getElementById('service');
+    services.forEach(service => {
+      const option = document.createElement('option');
+      option.value = service.name; // Assuming you want the service name as the value
+      option.text = service.name;
+      serviceDropdown.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error fetching services:', error);
+  }
+}
+
+
+
 //
 //
 // App Logging And Statistics
@@ -281,3 +386,4 @@ function log(level, message) {
     console[level](new Date().toISOString() + ': ' + message); // Log with timestamp
   }
 }
+
