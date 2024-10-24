@@ -78,28 +78,26 @@
     <p>Email: <em><strong>Coming Soon!</strong></em></p>
     <!--     <p>Email: <a href="mailto:kyle@mail.devthings.pro">kyle@mail.devthings.pro</a></p> -->
   </div>
-  <div class="contactForm">
+<div class="contactForm">
     <h2>Book a Service</h2>
     <form id="booking-form">
-      <label for="car-info">Car Information:</label><br>
-			<label for="vin">Enter VIN:</label><br>
-			<input type="text" id="vin" name="vin" placeholder="VIN"><br>
-			<p>
-			   Or
-			</p>
-			
-      <input type="text" id="car-make" name="car-make" placeholder="Make" required><br>
-      <input type="text" id="car-model" name="car-model" placeholder="Model" required><br>
-      <input type="number" id="car-year" name="car-year" placeholder="Year" required><br>
-      <label for="service">Service:</label><br>
-      <select id="service" name="service" required>
-        <option value="">Select Service</option>
-      </select><br>
-      <label for="comments">Comments:</label><br>
-      <textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea><br>
-      <button type="submit">Submit</button>
+        <label for="vin">VIN:</label><br>
+        <input type="text" id="vin" name="vin" placeholder="Enter your VIN" oninput="handleVinInput()" /><br>
+        
+        <label for="service">Service:</label><br>
+        <select id="service" name="service" required>
+            <option value="">Select Service</option>
+            <option value="oil_change">Oil Change</option>
+            <option value="tire_rotation">Tire Rotation</option>
+            <option value="brake_service">Brake Service</option>
+            <option value="other">Other</option>
+        </select><br>
+
+        <label for="comments">Comments:</label><br>
+        <textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea><br>
+        <button type="submit">Submit</button>
     </form>
-  </div>
+</div>
   <footer>
     <p>&copy; 2023 Kyle's Auto Shop. All rights reserved.</p>
   </footer>
