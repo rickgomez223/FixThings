@@ -78,46 +78,49 @@
     <p>Email: <em><strong>Coming Soon!</strong></em></p>
     <!--     <p>Email: <a href="mailto:kyle@mail.devthings.pro">kyle@mail.devthings.pro</a></p> -->
   </div>
-	<div class="contactForm">
-		<h2>Book a Service</h2>
-		<form id="booking-form">
-			<label for="type">Type Of Vehicle:</label><br>
-			<select id="type" name="type" onchange="fetchMakes()" required>
-				<option value="">Select Type</option>
-				<option value="car">Car</option>
-				<option value="truck">Truck</option>
-			</select><br>
-			<label for="year">Year:</label><br>
-			<select id="year" name="year" onchange="fetchMakes()" required>
-				<option value="">Select Year</option>
-			</select><br>
-			<label for="make">Make:</label><br>
-			<select id="make" name="make" onchange="fetchModels()" required>
-				<option value="">Select Make</option>
-			</select><br>
-			<label for="model">Model:</label><br>
-			<select id="model" name="model" onchange="fetchTrims()" required>
-				<option value="">Select Model</option>
-			</select><br>
-			<label for="submodel">Sub-Model:</label><br>
-			<select id="submodel" name="submodel" required>
-				<option value="">Select Sub-Model</option>
-			</select><br>
-			<label for="vin">VIN:</label><br>
-			<input type="text" id="vin" name="vin" placeholder="Enter your VIN" oninput="handleVinInput()" required /><br>
-			<label for="service">Service:</label><br>
-			<select id="service" name="service" required>
-				<option value="">Select Service</option>
-				<option value="oil_change">Oil Change</option>
-				<option value="tire_rotation">Tire Rotation</option>
-				<option value="brake_service">Brake Service</option>
-				<option value="other">Other</option>
-			</select><br>
-			<label for="comments">Comments:</label><br>
-			<textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea><br>
-			<button type="submit">Submit</button>
-		</form>
-	</div>
+ <div class="contactForm">
+        <h2>Book a Service</h2>
+        <form id="booking-form">
+            <label for="type">Type Of Vehicle:</label>
+            <select id="type" name="type" onchange="fetchMakes()" required>
+                <option value="">Select Type</option>
+                <option value="car">Car</option>
+                <option value="truck">Truck</option>
+            </select>
+            
+            <label for="year">Year:</label>
+            <select id="year" name="year" onchange="fetchMakes()" required>
+                <option value="">Select Year</option>
+            </select>
+            
+            <label for="make">Make:</label>
+            <select id="make" name="make" onchange="fetchModels()" required>
+                <option value="">Select Make</option>
+            </select>
+            
+            <label for="model">Model:</label>
+            <select id="model" name="model" onchange="" required>
+                <option value="">Select Model</option>
+            </select>
+            
+            <label for="submodel">Trim:</label>
+            <input id="submodel" name="submodel" >
+
+            <div class="vin-notice">Or enter your VIN for complete vehicle details (VIN is public information and helps identify parts and repairs).</div>
+            <label for="vin">VIN:</label>
+            <input type="text" id="vin" name="vin" placeholder="Enter your VIN" oninput="handleVinInput()" >
+            
+            <label for="service">Service:</label>
+            <select id="service" name="service" required>
+                <option value="">Select Service</option>
+            </select>
+            
+            <label for="comments">Comments:</label>
+            <textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea>
+            
+            <button type="submit">Submit</button>
+        </form>
+    </div>
 
   <footer>
     <p>&copy; 2023 Kyle's Auto Shop. All rights reserved.</p>
@@ -125,3 +128,5 @@
   <script src="./script.js"></script>
 </body>
 </html>
+
+

@@ -113,7 +113,7 @@ body {
   object-fit: cover;
 }
 
-button {
+.welcome button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -283,6 +283,72 @@ button {
 	width: auto;
 	padding: 10px;
 }
+
+
+.contactForm {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .contactForm h2 {
+            text-align: center;
+            color: #444;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .contactForm label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .contactForm select,
+        .contactForm input,
+        .contactForm textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .contactForm textarea {
+            resize: vertical;
+            height: 80px;
+        }
+
+        .contactForm button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .contactForm button:hover {
+            background-color: #45a049;
+        }
+
+        /* VIN Information Notice */
+        .vin-notice {
+            font-size: 0.85em;
+            color: #777;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
 footer {
   background-color: #f0f0f0;
   padding: 20px;
