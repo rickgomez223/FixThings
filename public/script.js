@@ -219,7 +219,7 @@ async function fetchModels() {
   }
 }
 
-function handleFormSubmit(event) {
+async function handleFormSubmit(event) {
   event.preventDefault();
 
   const vin = document.getElementById('vin').value;
@@ -228,6 +228,7 @@ function handleFormSubmit(event) {
   const make = document.getElementById('make').value;
   const model = document.getElementById('model').value;
 
+  // Check if either VIN or vehicle information is provided
   if (!vin && !(vehicleType && year && make && model)) {
     alert('Please provide either the VIN or complete vehicle information.');
     return;
@@ -241,9 +242,18 @@ function handleFormSubmit(event) {
     model: model || null,
     timestamp: new Date().toISOString(),
   };
-	log('info', data.valueOf());
-  // Send data to Firebase Function
-  sendToFirebase(data);
+  log('info', data.valueOf());
+  
+  // Send data to Firebase Function and await the result
+  try {
+    const result = await sendToFirebase(data); // Await the result from sendToFirebase
+    if (result.success) {
+      alert(`Form submitted successfully! Your ticket number is #${result.ticketNumber}`);
+    }
+  } catch (error) {
+    console.error('Submission failed:', error);
+    alert('Submission failed. Please try again.');
+  }
 }
 
 async function sendToFirebase(data) {
@@ -251,11 +261,11 @@ async function sendToFirebase(data) {
   const handleFormSubmission = functions.httpsCallable('handleFormSubmission');
   
   try {
-    await handleFormSubmission(data);
-    alert('Form submitted successfully!');
+    const response = await handleFormSubmission(data); // Await the response
+    return response.data; // Return the response data to be used in handleFormSubmit
   } catch (error) {
     console.error('Submission failed:', error);
-    alert('Submission failed. Please try again.');
+    throw new Error('Failed to submit form.'); // Throw an error to be caught in handleFormSubmit
   }
 }
 
