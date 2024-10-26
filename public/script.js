@@ -31,7 +31,9 @@ async function loadServices() {
     services.forEach(service => {
       appendServiceToList(servicesList, service);
       appendServiceToPricingTable(pricingTable, service);
+			
     });
+		populateServicesDropdown();
   } catch (error) {
     log('error', 'Failed to load services JSON');
     log('error', error);
