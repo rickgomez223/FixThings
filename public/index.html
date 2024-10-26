@@ -78,49 +78,58 @@
     <p>Email: <em><strong>Coming Soon!</strong></em></p>
     <!--     <p>Email: <a href="mailto:kyle@mail.devthings.pro">kyle@mail.devthings.pro</a></p> -->
   </div>
- <div class="contactForm">
-        <h2>Book a Service</h2>
-        <form id="booking-form">
-            <label for="type">Type Of Vehicle:</label>
-            <select id="type" name="type" onchange="fetchMakes()" required>
-                <option value="">Select Type</option>
-                <option value="car">Car</option>
-                <option value="truck">Truck</option>
-            </select>
-            
-            <label for="year">Year:</label>
-            <select id="year" name="year" onchange="fetchMakes()" required>
-                <option value="">Select Year</option>
-            </select>
-            
-            <label for="make">Make:</label>
-            <select id="make" name="make" onchange="fetchModels()" required>
-                <option value="">Select Make</option>
-            </select>
-            
-            <label for="model">Model:</label>
-            <select id="model" name="model" onchange="" required>
-                <option value="">Select Model</option>
-            </select>
-            
-            <label for="submodel">Trim:</label>
-            <input id="submodel" name="submodel" >
+<div class="contactForm">
+    <h2>Book a Service</h2>
+    <form id="booking-form">
+        <label for="first-name">First Name:</label>
+        <input type="text" id="first-name" name="first-name" placeholder="Enter your first name" required>
 
-            <div class="vin-notice">Or enter your VIN for complete vehicle details (VIN is public information and helps identify parts and repairs).</div>
-            <label for="vin">VIN:</label>
-            <input type="text" id="vin" name="vin" placeholder="Enter your VIN" oninput="handleVinInput()" >
-            
-            <label for="service">Service:</label>
-            <select id="service" name="service" required>
-                <option value="">Select Service</option>
-            </select>
-            
-            <label for="comments">Comments:</label>
-            <textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea>
-            
-            <button type="submit">Submit</button>
-        </form>
-    </div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+
+        <label for="type">Type Of Vehicle:</label>
+        <select id="type" name="type" onchange="fetchMakes()" required>
+            <option value="">Select Type</option>
+            <option value="car">Car</option>
+            <option value="truck">Truck</option>
+        </select>
+
+        <label for="year">Year:</label>
+        <select id="year" name="year" required>
+            <option value="">Select Year</option>
+        </select>
+
+        <label for="make">Make:</label>
+        <select id="make" name="make" required>
+            <option value="">Select Make</option>
+        </select>
+
+        <label for="model">Model:</label>
+        <select id="model" name="model" required>
+            <option value="">Select Model</option>
+        </select>
+
+        <label for="submodel">Trim:</label>
+        <input id="submodel" name="submodel">
+
+        <div class="vin-notice">Or enter your VIN for complete vehicle details (VIN is public information and helps identify parts and repairs).</div>
+        <label for="vin">VIN:</label>
+        <input type="text" id="vin" name="vin" placeholder="Enter your VIN">
+
+        <label for="service">Service:</label>
+        <select id="service" name="service" required>
+            <option value="">Select Service</option>
+        </select>
+
+        <label for="comments">Comments:</label>
+        <textarea id="comments" name="comments" placeholder="Additional comments or questions"></textarea>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
 
   <footer>
     <p>&copy; 2023 Kyle's Auto Shop. All rights reserved.</p>

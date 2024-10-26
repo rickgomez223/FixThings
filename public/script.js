@@ -2,6 +2,7 @@ const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/";
 
 document.addEventListener('DOMContentLoaded', () => {
   log('info', 'DOMContentLoaded');
+	loadDataFromLocal();
   initializeApp();
 });
 
@@ -221,9 +222,15 @@ async function fetchModels() {
   }
 }
 
+let retryInterval; // Variable to hold the retry interval ID
+
 async function handleFormSubmit(event) {
   event.preventDefault();
 
+  // Retrieve values from the form
+  const firstName = document.getElementById('first-name').value;
+  const email = document.getElementById('email').value;
+  const phone = document.getElementById('phone').value;
   const vin = document.getElementById('vin').value;
   const vehicleType = document.getElementById('type').value;
   const year = document.getElementById('year').value;
@@ -236,7 +243,11 @@ async function handleFormSubmit(event) {
     return;
   }
 
+  // Collect all data including new fields
   const data = {
+    firstName: firstName || null,
+    email: email || null,
+    phone: phone || null,
     vin: vin || null,
     vehicleType: vehicleType || null,
     year: year || null,
@@ -244,26 +255,80 @@ async function handleFormSubmit(event) {
     model: model || null,
     timestamp: new Date().toISOString(),
   };
-  log('info', data.valueOf());
-  
-  // Send data to Firebase Function and await the result
+
   try {
-    const result = await sendToFirebase(data); // Await the result from sendToFirebase
+    const result = await sendToFirebase(data);
     if (result.success) {
       alert(`Form submitted successfully! Your ticket number is #${result.ticketNumber}`);
+      document.getElementById('booking-form').reset(); // Reset the form on success
+      localStorage.removeItem('formData'); // Clear saved data on successful submission
+      clearInterval(retryInterval); // Clear any ongoing retry attempts
     }
   } catch (error) {
     console.error('Submission failed:', error);
-    alert('Submission failed. Please try again.');
+
+    // Inform the user and save data locally
+    alert('Submission failed. We will retry submitting the form. Your data has been saved locally.');
+    saveDataLocally(data); // Save data to local storage
+
+    // Start retrying the submission every 3 seconds
+    retryInterval = setInterval(async () => {
+      const savedData = loadDataFromLocal(); // Load the data to retry
+      if (savedData) {
+        try {
+          const retryResult = await sendToFirebase(savedData); // Retry submission
+          if (retryResult.success) {
+            alert(`Retry successful! Your ticket number is #${retryResult.ticketNumber}`);
+            document.getElementById('booking-form').reset(); // Reset the form after successful retry
+            localStorage.removeItem('formData'); // Clear saved data on successful retry
+            clearInterval(retryInterval); // Stop retrying
+          }
+        } catch (retryError) {
+          console.error('Retry submission failed:', retryError);
+          // You can add additional logging or user notifications here if needed
+        }
+      } else {
+        alert('No previous data found for retry. Please try submitting the form again.');
+        clearInterval(retryInterval); // Stop retrying if no data is found
+      }
+    }, 3000); // Retry every 3 seconds
   }
 }
 
+// Function to save data locally
+function saveDataLocally(data) {
+  localStorage.setItem('formData', JSON.stringify(data)); // Save as JSON string
+  console.log('Form data saved locally:', data);
+}
+
+// Function to load data from local storage
+function loadDataFromLocal() {
+  const savedData = localStorage.getItem('formData');
+  if (savedData) {
+    const data = JSON.parse(savedData);
+    
+    // Pre-fill form fields with saved data
+    document.getElementById('first-name').value = data.firstName || '';
+    document.getElementById('email').value = data.email || '';
+    document.getElementById('phone').value = data.phone || '';
+    document.getElementById('vin').value = data.vin || '';
+    document.getElementById('type').value = data.vehicleType || '';
+    document.getElementById('year').value = data.year || '';
+    document.getElementById('make').value = data.make || '';
+    document.getElementById('model').value = data.model || '';
+    
+    return data; // Return the data for retry check
+  }
+  return null; // Return null if no data found
+}
+
+// Function to send data to Firebase
 async function sendToFirebase(data) {
   const functions = firebase.functions();
   const handleFormSubmission = functions.httpsCallable('handleFormSubmission');
-  
+
   try {
-    const response = await handleFormSubmission(data); // Await the response
+    const response = await handleFormSubmission(data);
     return response.data; // Return the response data to be used in handleFormSubmit
   } catch (error) {
     console.error('Submission failed:', error);
@@ -271,6 +336,12 @@ async function sendToFirebase(data) {
   }
 }
 
+
 function log(type, message) {
-  console[type](`[${new Date().toISOString()}] ${message}`);
+  const allowedTypes = ['log', 'warn', 'error', 'info'];
+  if (allowedTypes.includes(type)) {
+    console[type](`[${new Date().toISOString()}] ${message}`);
+  } else {
+    console.log(`[${new Date().toISOString()}] Invalid log type: ${type}`);
+  }
 }
