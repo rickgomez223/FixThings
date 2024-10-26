@@ -8,12 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeApp() {
   log('info', 'App Initialization Started');
   try {
-    await loadServices();
+    await loadServices(); // Includes populateServicesDropdown
     await loadAboutMe();
     await loadCarousel();
     await loadPricingText();
-    populateYearsDropdown();
-    populateServicesDropdown();
+    populateYearsDropdown(); // Only call this once here
     startApp();
   } catch (error) {
     log('warn', 'App Initialization Failed');
@@ -161,7 +160,7 @@ function populateServicesDropdown() {
 async function startApp() {
   log('info', 'App Started');
   try {
-    populateYearsDropdown();
+    
     document.getElementById('type').addEventListener('change', fetchMakes);
     document.getElementById('year').addEventListener('change', fetchModels);
     document.getElementById('make').addEventListener('change', fetchModels);
@@ -242,7 +241,7 @@ function handleFormSubmit(event) {
     model: model || null,
     timestamp: new Date().toISOString(),
   };
-
+	log('info', data.valueOf());
   // Send data to Firebase Function
   sendToFirebase(data);
 }
