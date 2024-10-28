@@ -1,8 +1,12 @@
 const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/";
 
+import firebase from 'firebase/app';
+import 'firebase/firestore'; // Firestore
+import 'firebase/functions'; // Cloud Functions
+
 document.addEventListener('DOMContentLoaded', () => {
   log('info', 'DOMContentLoaded');
-	loadDataFromLocal();
+	
   initializeApp();
 });
 
@@ -222,8 +226,7 @@ async function fetchModels() {
   }
 }
 
-let retryInterval; // Variable to hold the retry interval ID
-
+// Main form submission handler
 async function handleFormSubmit(event) {
   event.preventDefault();
 
@@ -237,13 +240,13 @@ async function handleFormSubmit(event) {
   const make = document.getElementById('make').value;
   const model = document.getElementById('model').value;
 
-  // Check if either VIN or vehicle information is provided
+  // Validation: Ensure either VIN or full vehicle information is provided
   if (!vin && !(vehicleType && year && make && model)) {
     alert('Please provide either the VIN or complete vehicle information.');
     return;
   }
 
-  // Collect all data including new fields
+  // Collect form data into an object
   const data = {
     firstName: firstName || null,
     email: email || null,
@@ -257,85 +260,137 @@ async function handleFormSubmit(event) {
   };
 
   try {
-    const result = await sendToFirebase(data);
-    if (result.success) {
-      alert(`Form submitted successfully! Your ticket number is #${result.ticketNumber}`);
-      document.getElementById('booking-form').reset(); // Reset the form on success
-      localStorage.removeItem('formData'); // Clear saved data on successful submission
-      clearInterval(retryInterval); // Clear any ongoing retry attempts
-    }
+    // Step 1: Get customer count and assign unique ticket number
+    const ticketNumber = await incrementCustomerCount();
+    data.ticketNumber = ticketNumber; // Assign the unique ticket number
+
+    // Step 2: Save customer info to Firebase
+    await saveCustomerToFirebase(data);
+
+    // Step 3: Send webhook to Pushcut
+    await sendPushcutWebhook(data);
+
+    // Step 4: Send confirmation email via Mailgun
+    await sendMailgunEmail(data);
+
+    // Notify user of success
+    alert(`Form submitted successfully! Your ticket number is #${ticketNumber}`);
+    document.getElementById('booking-form').reset(); // Reset form
   } catch (error) {
     console.error('Submission failed:', error);
-
-    // Inform the user and save data locally
-    alert('Submission failed. We will retry submitting the form. Your data has been saved locally.');
-    saveDataLocally(data); // Save data to local storage
-
-    // Start retrying the submission every 3 seconds
-    retryInterval = setInterval(async () => {
-      const savedData = loadDataFromLocal(); // Load the data to retry
-      if (savedData) {
-        try {
-          const retryResult = await sendToFirebase(savedData); // Retry submission
-          if (retryResult.success) {
-            alert(`Retry successful! Your ticket number is #${retryResult.ticketNumber}`);
-            document.getElementById('booking-form').reset(); // Reset the form after successful retry
-            localStorage.removeItem('formData'); // Clear saved data on successful retry
-            clearInterval(retryInterval); // Stop retrying
-          }
-        } catch (retryError) {
-          console.error('Retry submission failed:', retryError);
-          // You can add additional logging or user notifications here if needed
-        }
-      } else {
-        alert('No previous data found for retry. Please try submitting the form again.');
-        clearInterval(retryInterval); // Stop retrying if no data is found
-      }
-    }, 3000); // Retry every 3 seconds
+    alert('There was an issue with submission. Please try again later.');
   }
 }
 
-// Function to save data locally
-function saveDataLocally(data) {
-  localStorage.setItem('formData', JSON.stringify(data)); // Save as JSON string
-  console.log('Form data saved locally:', data);
-}
-
-// Function to load data from local storage
-function loadDataFromLocal() {
-  const savedData = localStorage.getItem('formData');
-  if (savedData) {
-    const data = JSON.parse(savedData);
-    
-    // Pre-fill form fields with saved data
-    document.getElementById('first-name').value = data.firstName || '';
-    document.getElementById('email').value = data.email || '';
-    document.getElementById('phone').value = data.phone || '';
-    document.getElementById('vin').value = data.vin || '';
-    document.getElementById('type').value = data.vehicleType || '';
-    document.getElementById('year').value = data.year || '';
-    document.getElementById('make').value = data.make || '';
-    document.getElementById('model').value = data.model || '';
-    
-    return data; // Return the data for retry check
-  }
-  return null; // Return null if no data found
-}
-
-// Function to send data to Firebase
-async function sendToFirebase(data) {
-  const functions = firebase.functions();
-  const handleFormSubmission = functions.httpsCallable('handleFormSubmission');
-
+// Step 1: Increment customer count and return the new count
+async function incrementCustomerCount() {
   try {
-    const response = await handleFormSubmission(data);
-    return response.data; // Return the response data to be used in handleFormSubmit
+    const db = firebase.firestore();
+    const customerCountRef = db.collection('meta').doc('customerCount');
+
+    // Use Firestore transaction to safely increment count
+    const newCount = await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(customerCountRef);
+      if (!doc.exists) {
+        transaction.set(customerCountRef, { count: 1 });
+        return 1;
+      } else {
+        const count = doc.data().count + 1;
+        transaction.update(customerCountRef, { count });
+        return count;
+      }
+    });
+
+    return newCount; // Return new count as ticket number
   } catch (error) {
-    console.error('Submission failed:', error);
-    throw new Error('Failed to submit form.'); // Throw an error to be caught in handleFormSubmit
+    console.error('Error incrementing customer count:', error);
+    throw new Error('Failed to generate ticket number.');
   }
 }
 
+// Step 2: Save customer data to Firebase
+async function saveCustomerToFirebase(data) {
+  try {
+    const db = firebase.firestore();
+    const customerRef = db.collection('customers').doc(); // Auto-generate ID
+    await customerRef.set(data);
+    console.log('Customer data saved to Firebase:', data);
+  } catch (error) {
+    console.error('Error saving customer data to Firebase:', error);
+    throw new Error('Failed to save customer data.');
+  }
+}
+
+// Step 3: Send Pushcut webhook
+async function sendPushcutWebhook(data) {
+  try {
+    const webhookUrl = 'https://api.pushcut.io/VEQktvCTFnpchKTT3TsIK/notifications/FWA'; // Replace with your Pushcut webhook URL
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        notification: 'New Booking Submitted',
+        title: 'New Booking',
+        message: `Ticket #${data.ticketNumber}: ${data.firstName} submitted a form.`,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to send Pushcut webhook');
+    }
+
+    console.log('Pushcut webhook sent successfully.');
+  } catch (error) {
+    console.error('Error sending Pushcut webhook:', error);
+    throw new Error('Failed to notify Pushcut.');
+  }
+}
+
+// Step 4: Send confirmation email via Mailgun
+async function sendMailgunEmail(data) {
+  try {
+    const mailgunUrl = 'https://api.mailgun.net/'; // Replace with your Mailgun API URL
+    const apiKey = '59K9T2Y6METE2PK8AP8LWE8K'; // Replace with your Mailgun API Key
+
+    const emailBody = `
+      Hello ${data.firstName},
+      
+      Thank you for your submission. Your ticket number is #${data.ticketNumber}.
+      We will get in touch with you soon!
+
+      Details:
+      - Phone: ${data.phone || 'N/A'}
+      - Vehicle: ${data.year} ${data.make} ${data.model} (${data.vin || 'N/A'})
+
+      Best regards,
+      Your Team
+    `;
+
+    const formData = new FormData();
+    formData.append('from', 'you@yourdomain.com'); // Replace with your email
+    formData.append('to', data.email);
+    formData.append('to', 'kyle@support.fixthings.pro'); // Send to yourself too
+    formData.append('subject', `Booking Confirmation: Ticket #${data.ticketNumber}`);
+    formData.append('text', emailBody);
+
+    const response = await fetch(mailgunUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${btoa('api:' + apiKey)}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to send email via Mailgun');
+    }
+
+    console.log('Mailgun email sent successfully.');
+  } catch (error) {
+    console.error('Error sending email via Mailgun:', error);
+    throw new Error('Failed to send confirmation email.');
+  }
+}
 
 function log(type, message) {
   const allowedTypes = ['log', 'warn', 'error', 'info'];
