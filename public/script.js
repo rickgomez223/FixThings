@@ -1,8 +1,7 @@
 const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/";
 
-import firebase from 'firebase/app';
-import 'firebase/firestore'; // Firestore
-import 'firebase/functions'; // Cloud Functions
+import firebase from './src/firebase/FixThings-CustomerAppfirebaseConfig.js';
+
 
 document.addEventListener('DOMContentLoaded', () => {
   log('info', 'DOMContentLoaded');
