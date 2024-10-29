@@ -1,6 +1,8 @@
 const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/";
 
-import firebase from './src/firebase/FixThings-CustomerAppfirebaseConfig.js';
+// Your main JS file
+
+import { app, database as db, ref, set, get } from './src/firebase/FixThings-CustomerAppfirebaseConfig.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -284,7 +286,7 @@ async function handleFormSubmit(event) {
 // Step 1: Increment customer count and return the new count
 async function incrementCustomerCount() {
   try {
-    const db = firebase.firestore();
+    
     const customerCountRef = db.collection('meta').doc('customerCount');
 
     // Use Firestore transaction to safely increment count
@@ -310,7 +312,7 @@ async function incrementCustomerCount() {
 // Step 2: Save customer data to Firebase
 async function saveCustomerToFirebase(data) {
   try {
-    const db = firebase.firestore();
+    
     const customerRef = db.collection('customers').doc(); // Auto-generate ID
     await customerRef.set(data);
     console.log('Customer data saved to Firebase:', data);
