@@ -327,25 +327,36 @@ async function handleFormSubmit(event) {
 async function incrementCustomerCount() {
   try {
     const customerCountRef = ref(db, 'meta/customerCount');
-    log('info', 'Reference:', customerCountRef);
+    console.log('Reference to customer count:', customerCountRef);
 
+    // Attempt to get the current count from the database
     const snapshot = await get(customerCountRef);
     console.log('Snapshot exists:', snapshot.exists());
 
     let newCount;
 
     if (!snapshot.exists()) {
+      // If no count exists, initialize it to 1
       newCount = 1;
-      console.log('Initializing customer count:', newCount);
+      console.log('No existing count found. Initializing customer count to:', newCount);
       await set(customerCountRef, { count: newCount });
+      console.log('Customer count initialized in database.');
     } else {
-      const currentCount = snapshot.val().count + 1;
-      console.log('Current count:', currentCount);
-      await update(customerCountRef, { count: currentCount });
-      newCount = currentCount;
+      // If it exists, increment the current count
+      const currentCount = snapshot.val().count; // Get current count value
+      console.log('Current count retrieved:', currentCount);
+      
+      newCount = currentCount + 1; // Increment the count
+      console.log('Incrementing count to:', newCount);
+      
+      // Set the updated count back to the database
+      await set(customerCountRef, { count: newCount });
+      console.log('Customer count updated in database.');
     }
 
-    return newCount; // Return the new count as the ticket number
+    // Return the new count as the ticket number
+    console.log('Returning new count as ticket number:', newCount);
+    return newCount; 
   } catch (error) {
     console.error('Error incrementing customer count:', error.message || error);
     throw new Error('Failed to generate ticket number.');
