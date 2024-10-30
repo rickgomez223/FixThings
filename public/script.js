@@ -172,7 +172,11 @@ async function startApp() {
     document.getElementById('type').addEventListener('change', fetchMakes);
     document.getElementById('year').addEventListener('change', fetchModels);
     document.getElementById('make').addEventListener('change', fetchModels);
-    document.getElementById('booking-form').addEventListener('submit', handleFormSubmit);
+ 
+		// Event listeners to handle form submissions
+		document.getElementById('booking-form').addEventListener('submit', handleFormSubmit);
+		document.querySelector('.contact-form form').addEventListener('submit', handleFormSubmit);
+
   } catch (error) {
     log('warn', 'App Start Failed');
     log('error', error);
@@ -230,35 +234,71 @@ async function fetchModels() {
 // Main form submission handler
 async function handleFormSubmit(event) {
   event.preventDefault();
+  
+  // Determine which form is being submitted
+  const form = event.target;
+  const formType = form.id === 'booking-form' ? 'booking' : 'contact';
 
-  // Retrieve values from the form
-  const firstName = document.getElementById('first-name').value;
-  const email = document.getElementById('email').value;
-  const phone = document.getElementById('phone').value;
-  const vin = document.getElementById('vin').value;
-  const vehicleType = document.getElementById('type').value;
-  const year = document.getElementById('year').value;
-  const make = document.getElementById('make').value;
-  const model = document.getElementById('model').value;
+  let data;
 
-  // Validation: Ensure either VIN or full vehicle information is provided
-  if (!vin && !(vehicleType && year && make && model)) {
-    alert('Please provide either the VIN or complete vehicle information.');
-    return;
+  if (formType === 'contact') {
+    // Retrieve values from the contact form
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const carYear = document.getElementById('car-year').value;
+    const carMake = document.getElementById('car-make').value;
+    const carModel = document.getElementById('car-model').value;
+    const carTrim = document.getElementById('car-trim').value;
+    const comments = document.getElementById('comments').value;
+
+    // Collect contact form data into an object
+    data = {
+      name,
+      email,
+      carYear,
+      carMake,
+      carModel,
+      carTrim,
+      comments,
+      timestamp: new Date().toISOString(),
+    };
+
+  } else if (formType === 'booking') {
+    // Retrieve values from the booking form
+    const firstName = document.getElementById('first-name').value;
+    const email = document.getElementById('email').value; // You might want to change the email field ID to avoid confusion
+    const phone = document.getElementById('phone').value;
+    const vin = document.getElementById('vin').value;
+    const vehicleType = document.getElementById('type').value;
+    const year = document.getElementById('year').value;
+    const make = document.getElementById('make').value;
+    const model = document.getElementById('model').value;
+    const submodel = document.getElementById('submodel').value; // For car trim
+    const service = document.getElementById('service').value;
+    const comments = document.getElementById('comments').value;
+
+    // Validation: Ensure either VIN or full vehicle information is provided
+    if (!vin && !(vehicleType && year && make && model)) {
+      alert('Please provide either the VIN or complete vehicle information.');
+      return;
+    }
+
+    // Collect booking form data into an object
+    data = {
+      firstName,
+      email,
+      phone,
+      vin,
+      vehicleType,
+      year,
+      make,
+      model,
+      submodel,
+      service,
+      comments,
+      timestamp: new Date().toISOString(),
+    };
   }
-
-  // Collect form data into an object
-  const data = {
-    firstName: firstName || null,
-    email: email || null,
-    phone: phone || null,
-    vin: vin || null,
-    vehicleType: vehicleType || null,
-    year: year || null,
-    make: make || null,
-    model: model || null,
-    timestamp: new Date().toISOString(),
-  };
 
   try {
     // Step 1: Get customer count and assign unique ticket number
@@ -276,7 +316,7 @@ async function handleFormSubmit(event) {
 
     // Notify user of success
     alert(`Form submitted successfully! Your ticket number is #${ticketNumber}`);
-    document.getElementById('booking-form').reset(); // Reset form
+    form.reset(); // Reset the form after submission
   } catch (error) {
     console.error('Submission failed:', error);
     alert('There was an issue with submission. Please try again later.');
@@ -286,7 +326,6 @@ async function handleFormSubmit(event) {
 // Step 1: Increment customer count and return the new count
 async function incrementCustomerCount() {
   try {
-    
     const customerCountRef = db.collection('meta').doc('customerCount');
 
     // Use Firestore transaction to safely increment count
@@ -312,7 +351,6 @@ async function incrementCustomerCount() {
 // Step 2: Save customer data to Firebase
 async function saveCustomerToFirebase(data) {
   try {
-    
     const customerRef = db.collection('customers').doc(); // Auto-generate ID
     await customerRef.set(data);
     console.log('Customer data saved to Firebase:', data);
@@ -332,7 +370,7 @@ async function sendPushcutWebhook(data) {
       body: JSON.stringify({
         notification: 'New Booking Submitted',
         title: 'New Booking',
-        message: `Ticket #${data.ticketNumber}: ${data.firstName} submitted a form.`,
+        message: `Ticket #${data.ticketNumber}: ${data.firstName || data.name} submitted a form.`,
       }),
     });
 
@@ -350,11 +388,11 @@ async function sendPushcutWebhook(data) {
 // Step 4: Send confirmation email via Mailgun
 async function sendMailgunEmail(data) {
   try {
-    const mailgunUrl = 'https://api.mailgun.net/'; // Replace with your Mailgun API URL
+    const mailgunUrl = 'https://api.mailgun.net/v3/yourdomain.com/messages'; // Replace with your Mailgun API URL
     const apiKey = '59K9T2Y6METE2PK8AP8LWE8K'; // Replace with your Mailgun API Key
 
     const emailBody = `
-      Hello ${data.firstName},
+      Hello ${data.firstName || data.name},
       
       Thank you for your submission. Your ticket number is #${data.ticketNumber}.
       We will get in touch with you soon!
@@ -362,6 +400,7 @@ async function sendMailgunEmail(data) {
       Details:
       - Phone: ${data.phone || 'N/A'}
       - Vehicle: ${data.year} ${data.make} ${data.model} (${data.vin || 'N/A'})
+      - Trim: ${data.submodel || 'N/A'}
 
       Best regards,
       Your Team
@@ -392,6 +431,7 @@ async function sendMailgunEmail(data) {
     throw new Error('Failed to send confirmation email.');
   }
 }
+
 
 function log(type, message) {
   const allowedTypes = ['log', 'warn', 'error', 'info'];
