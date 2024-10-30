@@ -327,23 +327,27 @@ async function handleFormSubmit(event) {
 async function incrementCustomerCount() {
   try {
     const customerCountRef = ref(db, 'meta/customerCount');
+    log('info', 'Reference:', customerCountRef);
 
-    // Use Realtime Database to increment count
-    const snapshot = await get(child(customerCountRef));
+    const snapshot = await get(customerCountRef);
+    console.log('Snapshot exists:', snapshot.exists());
+
     let newCount;
 
     if (!snapshot.exists()) {
       newCount = 1;
+      console.log('Initializing customer count:', newCount);
       await set(customerCountRef, { count: newCount });
     } else {
       const currentCount = snapshot.val().count + 1;
+      console.log('Current count:', currentCount);
       await update(customerCountRef, { count: currentCount });
       newCount = currentCount;
     }
 
-    return newCount; // Return new count as ticket number
+    return newCount; // Return the new count as the ticket number
   } catch (error) {
-    console.error('Error incrementing customer count:', error);
+    console.error('Error incrementing customer count:', error.message || error);
     throw new Error('Failed to generate ticket number.');
   }
 }
