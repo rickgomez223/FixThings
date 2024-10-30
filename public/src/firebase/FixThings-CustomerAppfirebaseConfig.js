@@ -5,7 +5,7 @@
 	// import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 	// import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 	// import { getStorage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
-	import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+	import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 	// import { getMessaging } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 	// import { getFunctions } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
 	// import { getPerformance } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-performance.js";
@@ -40,6 +40,6 @@
 	
 	// Export the initialized services
 	// export { app, analytics, firestore, auth, storage, database, messaging, functions, performance, remoteConfig };
-  export { app, database, ref, set, get }
+  export { app, database, ref, set, get, child, update }
 	
 	

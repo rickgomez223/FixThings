@@ -2,7 +2,7 @@ const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/";
 
 // Your main JS file
 
-import { app, database as db, ref, set, get } from './src/firebase/FixThings-CustomerAppfirebaseConfig.js';
+import { app, database as db, ref, set, get, child, update } from './src/firebase/FixThings-CustomerAppfirebaseConfig.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -326,20 +326,20 @@ async function handleFormSubmit(event) {
 // Step 1: Increment customer count and return the new count
 async function incrementCustomerCount() {
   try {
-    const customerCountRef = db.collection('meta').doc('customerCount');
+    const customerCountRef = ref(db, 'meta/customerCount');
 
-    // Use Firestore transaction to safely increment count
-    const newCount = await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(customerCountRef);
-      if (!doc.exists) {
-        transaction.set(customerCountRef, { count: 1 });
-        return 1;
-      } else {
-        const count = doc.data().count + 1;
-        transaction.update(customerCountRef, { count });
-        return count;
-      }
-    });
+    // Use Realtime Database to increment count
+    const snapshot = await get(child(customerCountRef));
+    let newCount;
+
+    if (!snapshot.exists()) {
+      newCount = 1;
+      await set(customerCountRef, { count: newCount });
+    } else {
+      const currentCount = snapshot.val().count + 1;
+      await update(customerCountRef, { count: currentCount });
+      newCount = currentCount;
+    }
 
     return newCount; // Return new count as ticket number
   } catch (error) {
@@ -351,8 +351,8 @@ async function incrementCustomerCount() {
 // Step 2: Save customer data to Firebase
 async function saveCustomerToFirebase(data) {
   try {
-    const customerRef = db.collection('customers').doc(); // Auto-generate ID
-    await customerRef.set(data);
+    const customerRef = ref(db, 'customers/' + data.ticketNumber); // Using ticket number as the key
+    await set(customerRef, data); // Save data
     console.log('Customer data saved to Firebase:', data);
   } catch (error) {
     console.error('Error saving customer data to Firebase:', error);
