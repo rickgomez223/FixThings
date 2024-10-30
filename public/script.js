@@ -387,11 +387,15 @@ async function sendPushcutWebhook(data) {
 
 // Step 4: Send confirmation email via Mailgun
 async function sendMailgunEmail(data) {
+	
+	const formData = require('form-data');
+  const Mailgun = require('mailgun.js');
+  const mailgun = new Mailgun(formData);
+  const mg = mailgun.client({username: 'api', key: process.env.MAILGUN_API_KEY || '59K9T2Y6METE2PK8AP8LWE8K'});
   try {
-    const mailgunUrl = 'https://api.mailgun.net/v3/yourdomain.com/messages'; // Replace with your Mailgun API URL
-    const apiKey = '59K9T2Y6METE2PK8AP8LWE8K'; // Replace with your Mailgun API Key
-
-    const emailBody = `
+    
+		
+		const emailBody = `
       Hello ${data.firstName || data.name},
       
       Thank you for your submission. Your ticket number is #${data.ticketNumber}.
@@ -405,14 +409,24 @@ async function sendMailgunEmail(data) {
       Best regards,
       Your Team
     `;
-
-    const formData = new FormData();
-    formData.append('from', 'you@yourdomain.com'); // Replace with your email
-    formData.append('to', data.email);
-    formData.append('to', 'kyle@support.fixthings.pro'); // Send to yourself too
-    formData.append('subject', `Booking Confirmation: Ticket #${data.ticketNumber}`);
-    formData.append('text', emailBody);
-
+		
+		
+		
+		
+		mg.messages.create('sandbox-123.mailgun.org', {
+    from: "Excited User <mailgun@sandbox-123.mailgun.org>",
+    to: ["Rickgomez223@gmail.com", data.email],
+    subject: "Hello",
+    text: "Testing some Mailgun awesomness!",
+    html: emailBody
+  })
+  .then(msg => console.log(msg)) // logs response data
+  .catch(err => console.error(err)); // logs any error
+		
+    
+return;
+    
+	
     const response = await fetch(mailgunUrl, {
       method: 'POST',
       headers: {
