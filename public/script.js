@@ -234,71 +234,36 @@ async function fetchModels() {
 // Main form submission handler
 async function handleFormSubmit(event) {
   event.preventDefault();
-  
-  // Determine which form is being submitted
+
+  // Define the contact form
   const form = event.target;
-  const formType = form.id === 'booking-form' ? 'booking' : 'contact';
 
-  let data;
+  // Retrieve values from the contact form
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const carYear = document.getElementById('car-year').value;
+  const carMake = document.getElementById('car-make').value;
+  const carModel = document.getElementById('car-model').value;
+  const carTrim = document.getElementById('car-trim').value;
+  const comments = document.getElementById('comments').value;
 
-  if (formType === 'contact') {
-    // Retrieve values from the contact form
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const carYear = document.getElementById('car-year').value;
-    const carMake = document.getElementById('car-make').value;
-    const carModel = document.getElementById('car-model').value;
-    const carTrim = document.getElementById('car-trim').value;
-    const comments = document.getElementById('comments').value;
-
-    // Collect contact form data into an object
-    data = {
-      name,
-      email,
-      carYear,
-      carMake,
-      carModel,
-      carTrim,
-      comments,
-      timestamp: new Date().toISOString(),
-    };
-
-  } else if (formType === 'booking') {
-    // Retrieve values from the booking form
-    const firstName = document.getElementById('first-name').value;
-    const email = document.getElementById('email').value; // You might want to change the email field ID to avoid confusion
-    const phone = document.getElementById('phone').value;
-    const vin = document.getElementById('vin').value;
-    const vehicleType = document.getElementById('type').value;
-    const year = document.getElementById('year').value;
-    const make = document.getElementById('make').value;
-    const model = document.getElementById('model').value;
-    const submodel = document.getElementById('submodel').value; // For car trim
-    const service = document.getElementById('service').value;
-    const comments = document.getElementById('comments').value;
-
-    // Validation: Ensure either VIN or full vehicle information is provided
-    if (!vin && !(vehicleType && year && make && model)) {
-      alert('Please provide either the VIN or complete vehicle information.');
-      return;
-    }
-
-    // Collect booking form data into an object
-    data = {
-      firstName,
-      email,
-      phone,
-      vin,
-      vehicleType,
-      year,
-      make,
-      model,
-      submodel,
-      service,
-      comments,
-      timestamp: new Date().toISOString(),
-    };
+  // Validation: Ensure all required fields are provided
+  if (!(name && email && carYear && carMake && carModel && carTrim)) {
+    alert('Please provide your name, email & the complete vehicle information.');
+    return;
   }
+
+  // Collect contact form data into an object
+  const data = {
+    name,
+    email,
+    carYear,
+    carMake,
+    carModel,
+    carTrim,
+    comments,
+    timestamp: new Date().toISOString(),
+  };
 
   try {
     // Step 1: Get customer count and assign unique ticket number
@@ -311,7 +276,7 @@ async function handleFormSubmit(event) {
     // Step 3: Send webhook to Pushcut
     await sendPushcutWebhook(data);
 
-    // Step 4: Send confirmation email via Mailgun
+    // Step 4: Send confirmation email via Postmark
     await sendPostmarkEmail(data);
 
     // Notify user of success
@@ -327,36 +292,19 @@ async function handleFormSubmit(event) {
 async function incrementCustomerCount() {
   try {
     const customerCountRef = ref(db, 'meta/customerCount');
-    console.log('Reference to customer count:', customerCountRef);
-
-    // Attempt to get the current count from the database
     const snapshot = await get(customerCountRef);
-    console.log('Snapshot exists:', snapshot.exists());
 
     let newCount;
-
     if (!snapshot.exists()) {
-      // If no count exists, initialize it to 1
       newCount = 1;
-      console.log('No existing count found. Initializing customer count to:', newCount);
       await set(customerCountRef, { count: newCount });
-      console.log('Customer count initialized in database.');
     } else {
-      // If it exists, increment the current count
-      const currentCount = snapshot.val().count; // Get current count value
-      console.log('Current count retrieved:', currentCount);
-      
-      newCount = currentCount + 1; // Increment the count
-      console.log('Incrementing count to:', newCount);
-      
-      // Set the updated count back to the database
+      const currentCount = snapshot.val().count;
+      newCount = currentCount + 1;
       await set(customerCountRef, { count: newCount });
-      console.log('Customer count updated in database.');
     }
 
-    // Return the new count as the ticket number
-    console.log('Returning new count as ticket number:', newCount);
-    return newCount; 
+    return newCount;
   } catch (error) {
     console.error('Error incrementing customer count:', error.message || error);
     throw new Error('Failed to generate ticket number.');
@@ -366,9 +314,8 @@ async function incrementCustomerCount() {
 // Step 2: Save customer data to Firebase
 async function saveCustomerToFirebase(data) {
   try {
-    const customerRef = ref(db, 'customers/' + data.ticketNumber); // Using ticket number as the key
-    await set(customerRef, data); // Save data
-    console.log('Customer data saved to Firebase:', data);
+    const customerRef = ref(db, 'customers/' + data.ticketNumber);
+    await set(customerRef, data);
   } catch (error) {
     console.error('Error saving customer data to Firebase:', error);
     throw new Error('Failed to save customer data.');
@@ -378,22 +325,18 @@ async function saveCustomerToFirebase(data) {
 // Step 3: Send Pushcut webhook
 async function sendPushcutWebhook(data) {
   try {
-    const webhookUrl = 'https://api.pushcut.io/VEQktvCTFnpchKTT3TsIK/notifications/FWA'; // Replace with your Pushcut webhook URL
+    const webhookUrl = 'https://api.pushcut.io/VEQktvCTFnpchKTT3TsIK/notifications/FWA';
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         notification: 'New Booking Submitted',
         title: 'New Booking',
-        message: `Ticket #${data.ticketNumber}: ${data.firstName || data.name} submitted a form.`,
+        text: `Ticket #${data.ticketNumber}: ${data.name} submitted a form.`,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to send Pushcut webhook');
-    }
-
-    console.log('Pushcut webhook sent successfully.');
+    if (!response.ok) throw new Error('Failed to send Pushcut webhook');
   } catch (error) {
     console.error('Error sending Pushcut webhook:', error);
     throw new Error('Failed to notify Pushcut.');
@@ -403,25 +346,35 @@ async function sendPushcutWebhook(data) {
 async function sendPostmarkEmail(data) {
   const postmarkApiUrl = "https://api.postmarkapp.com/email";
   const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Replace with your Postmark server key
+  const htmlTemplateUrl = './customerSignupEmail.html'; // URL to your hosted HTML template
 
-  // Construct email body with fallbacks for blank fields
-  const emailBody = `
-    Hello ${data.firstName || data.name || 'N/A'},
-    Thank you for your submission. Your ticket number is #${data.ticketNumber || 'N/A'}.
-    We will get in touch with you soon!
+  let emailBody;
 
-    Details:
-    - Phone: ${data.phone || 'N/A'}
-    - Vehicle: ${data.year || 'N/A'} ${data.make || 'N/A'} ${data.model || 'N/A'} (${data.vin || 'N/A'})
-    - Trim: ${data.submodel || 'N/A'}
-
-    Best regards,
-    Your Team
-  `;
-
+  // Fetch the HTML body from the hosted URL
   try {
-    log('info', 'Preparing to send email to: ' + (data.email || 'N/A'));
+    const response = await fetch(htmlTemplateUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch HTML template: ${response.status} ${response.statusText}`);
+    }
+    emailBody = await response.text(); // Get the HTML content as text
+  } catch (error) {
+    console.error('Error fetching email template:', error);
+    throw error;
+  }
 
+  // Replace placeholders with actual values
+  emailBody = emailBody
+    .replace(/{{name}}/g, data.name || 'Customer')
+    .replace(/{{ticketNumber}}/g, data.ticketNumber || 'N/A')
+    .replace(/{{phone}}/g, data.phone || 'N/A')
+    .replace(/{{carYear}}/g, data.carYear || 'N/A')
+    .replace(/{{carMake}}/g, data.carMake || 'N/A')
+    .replace(/{{carModel}}/g, data.carModel || 'N/A')
+    .replace(/{{carTrim}}/g, data.carTrim || 'N/A')
+    .replace(/{{comments}}/g, data.comments || 'N/A');
+
+		log('warn', emailBody);
+  try {
     const response = await fetch(postmarkApiUrl, {
       method: "POST",
       headers: {
@@ -431,24 +384,23 @@ async function sendPostmarkEmail(data) {
       },
       body: JSON.stringify({
         From: "kyle@fixthings.pro", // Replace with your verified sender email
-        To: "kyle@fixthings.pro", // Change to the recipient's email
-        Subject: "Hello from Postmark",
+        To: `${data.email},kyle@fixthings.pro`,
+        Subject: "Submission Received",
         HtmlBody: emailBody,
         MessageStream: "outbound"
       })
     });
 
-    // Handle response and check for errors
+    // Detailed error handling for response
     if (!response.ok) {
-      const error = await response.json();
-      log('error', 'Error sending email via Postmark', error);
-      throw new Error('Failed to send confirmation email.');
+      const errorData = await response.json();
+      console.error('Postmark response error:', errorData);
+      throw new Error(`Failed to send confirmation email: ${errorData.Message || 'Unknown error'}`);
     }
 
-    const responseData = await response.json();
-    log('info', 'Postmark email sent successfully', responseData);
+    console.log('Email sent successfully');
   } catch (error) {
-    log('error', 'Error sending email', error);
+    console.error('Error sending email:', error.message || error);
     throw error;
   }
 }
