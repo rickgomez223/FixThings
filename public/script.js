@@ -309,27 +309,31 @@ async function sendPushcutWebhook(data) {
 async function sendPostmarkEmail(data) {
   const postmarkApiUrl = "https://api.postmarkapp.com/email";
   const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Replace with your Postmark server key
-  const remoteHtmlTemplateUrl =
-    "https://fixthings.pro/customerSignupEmail.html"; // Remote URL
+  const remoteHtmlTemplateUrl = "./src/customerSignupEmail.html"; // Remote URL
 
   let emailBody;
 
   // Function to fetch the HTML template from a URL
   async function fetchHtmlTemplate(url) {
     log("info", "Fetching HTML template from remote URL.", { url });
-    const response = await fetch(url);
-    if (!response.ok) {
-      log("error", "Failed to fetch HTML template.", {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-      });
-      throw new Error(
-        `Failed to fetch HTML template from ${url}: ${response.status} ${response.statusText}`,
-      );
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        log("error", "Failed to fetch HTML template.", {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+        });
+        throw new Error(
+          `Failed to fetch HTML template from ${url}: ${response.status} ${response.statusText}`
+        );
+      }
+      log("info", "HTML template fetched successfully.", { url });
+      return await response.text(); // Return the HTML content as text
+    } catch (error) {
+      log("error", "Error in fetching HTML template.", { error: error.message });
+      throw error; // Re-throw to handle it in the main function
     }
-    log("info", "HTML template fetched successfully.", { url });
-    return await response.text(); // Return the HTML content as text
   }
 
   // Try fetching the HTML template from the remote URL first
@@ -342,6 +346,7 @@ async function sendPostmarkEmail(data) {
     });
     // If remote fetch fails, handle accordingly...
     // Logic to read local HTML template can go here if needed.
+    emailBody = "<p>Fallback local HTML template here.</p>"; // Replace with actual local HTML loading logic if necessary
   }
 
   // Replace placeholders with actual values
@@ -355,9 +360,10 @@ async function sendPostmarkEmail(data) {
     .replace(/{{carTrim}}/g, data.carTrim || "N/A")
     .replace(/{{comments}}/g, data.comments || "N/A");
 
+  // Log the prepared email body for preview
   log("info", "Prepared email body for sending.", {
     ticketNumber: data.ticketNumber,
-    emailBody,
+    emailBody: emailBody, // Log the email body for preview
   });
 
   // Prepare the email payload
@@ -385,7 +391,7 @@ async function sendPostmarkEmail(data) {
       const errorData = await response.json();
       log("error", "Postmark response error.", { errorData });
       throw new Error(
-        `Failed to send confirmation email: ${errorData.Message || "Unknown error"}`,
+        `Failed to send confirmation email: ${errorData.Message || "Unknown error"}`
       );
     }
 
@@ -399,18 +405,23 @@ async function sendPostmarkEmail(data) {
       ticketNumber: data.ticketNumber,
       error: error.message || error,
     });
-    throw error;
+    throw error; // Ensure to propagate the error
   }
 }
 
 // Logging function
 
-function log(type, message) {
+function log(type, message, data = {}) {
   const allowedTypes = ["log", "warn", "error", "info"];
+
+  // Format the log entry with a timestamp and message
+  const logEntry = `[${new Date().toISOString()}] ${message}`;
+
+  // Check if the log type is valid
   if (allowedTypes.includes(type)) {
-    console[type](`[${new Date().toISOString()}] ${message}`);
+    console[type](logEntry, data); // Log the message along with additional data if provided
   } else {
-    console.log(`[${new Date().toISOString()}] Invalid log type: ${type}`);
+    console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
   }
 }
 
