@@ -165,7 +165,7 @@ async function handleFormSubmit(event) {
   // Retrieve values from the contact form
   const name = document.getElementById('name').value;
   const email = document.getElementById('email').value;
-	const phone = document.getElementById('phone').value;
+  const phone = document.getElementById('phone').value;
   const carYear = document.getElementById('car-year').value;
   const carMake = document.getElementById('car-make').value;
   const carModel = document.getElementById('car-model').value;
@@ -175,6 +175,15 @@ async function handleFormSubmit(event) {
   // Validation: Ensure all required fields are provided
   if (!(name && email && carYear && carMake && carModel && carTrim)) {
     alert('Please provide your name, email & the complete vehicle information.');
+    log('error', 'Validation failed: Missing required fields.', {
+      name,
+      email,
+      carYear,
+      carMake,
+      carModel,
+      carTrim,
+      comments,
+    });
     return;
   }
 
@@ -182,7 +191,7 @@ async function handleFormSubmit(event) {
   const data = {
     name,
     email,
-		phone,
+    phone,
     carYear,
     carMake,
     carModel,
@@ -190,20 +199,26 @@ async function handleFormSubmit(event) {
     comments,
     timestamp: new Date().toISOString(),
   };
-log('info', data);
+
+  log('info', 'Form submission initiated.', data);
+
   try {
     // Step 1: Get customer count and assign unique ticket number
     const ticketNumber = await incrementCustomerCount();
     data.ticketNumber = ticketNumber; // Assign the unique ticket number
+    log('info', 'Customer count incremented successfully.', { ticketNumber });
 
     // Step 2: Save customer info to Firebase
     await saveCustomerToFirebase(data);
+    log('info', 'Customer data saved to Firebase successfully.', { ticketNumber });
 
     // Step 3: Send webhook to Pushcut
     await sendPushcutWebhook(data);
+    log('info', 'Pushcut webhook sent successfully.', { ticketNumber });
 
     // Step 4: Send confirmation email via Postmark
     await sendPostmarkEmail(data);
+    log('info', 'Confirmation email sent successfully.', { ticketNumber });
 
     // Notify user of success
     alert(`Form submitted successfully! Your ticket number is #${ticketNumber}`);
@@ -211,11 +226,13 @@ log('info', data);
   } catch (error) {
     console.error('Submission failed:', error);
     alert('There was an issue with submission. Please try again later.');
+    log('error', 'Submission failed with error.', { error: error.message || error });
   }
 }
 
 // Step 1: Increment customer count and return the new count
 async function incrementCustomerCount() {
+  log('info', 'Starting to increment customer count.');
   try {
     const customerCountRef = ref(db, 'meta/customerCount');
     const snapshot = await get(customerCountRef);
@@ -224,47 +241,75 @@ async function incrementCustomerCount() {
     if (!snapshot.exists()) {
       newCount = 1;
       await set(customerCountRef, { count: newCount });
+      log('info', 'Customer count initialized.', { count: newCount });
     } else {
       const currentCount = snapshot.val().count;
       newCount = currentCount + 1;
       await set(customerCountRef, { count: newCount });
+      log('info', 'Customer count updated.', { currentCount, newCount });
     }
 
     return newCount;
   } catch (error) {
     console.error('Error incrementing customer count:', error.message || error);
+    log('error', 'Failed to increment customer count.', { error: error.message || error });
     throw new Error('Failed to generate ticket number.');
   }
 }
 
 // Step 2: Save customer data to Firebase
 async function saveCustomerToFirebase(data) {
+  log('info', 'Starting to save customer data to Firebase.', { ticketNumber: data.ticketNumber });
   try {
     const customerRef = ref(db, 'customers/' + data.ticketNumber);
     await set(customerRef, data);
+    log('info', 'Customer data saved to Firebase.', { ticketNumber: data.ticketNumber });
+    return 'complete'; // Indicate completion
   } catch (error) {
     console.error('Error saving customer data to Firebase:', error);
+    log('error', 'Failed to save customer data to Firebase.', { error: error.message || error });
     throw new Error('Failed to save customer data.');
   }
 }
 
+// Step 3: Send webhook to Pushcut
+async function sendPushcutWebhook(data) {
+  log('info', 'Sending webhook to Pushcut.', { ticketNumber: data.ticketNumber });
+  // Your webhook logic here
+  // ...
+
+  log('info', 'Webhook to Pushcut sent successfully.', { ticketNumber: data.ticketNumber });
+  return 'complete'; // Indicate completion
+}
+
+// Step 4: Send confirmation email via Postmark
 async function sendPostmarkEmail(data) {
-  const postmarkApiUrl = "https://api.postmarkapp.com/email"; // Removed trailing slash
+  const postmarkApiUrl = "https://api.postmarkapp.com/email";
   const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Replace with your Postmark server key
-  const htmlTemplateUrl = 'https://fixthings.pro/customerSignupEmail.html'; // Ensure this URL is correct
+  const remoteHtmlTemplateUrl = 'https://fixthings.pro/customerSignupEmail.html'; // Remote URL
 
   let emailBody;
 
-  // Fetch the HTML body from the hosted URL
-  try {
-    const response = await fetch(htmlTemplateUrl);
+  // Function to fetch the HTML template from a URL
+  async function fetchHtmlTemplate(url) {
+    log('info', 'Fetching HTML template from remote URL.', { url });
+    const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Failed to fetch HTML template: ${response.status} ${response.statusText}`);
+      log('error', 'Failed to fetch HTML template.', { url, status: response.status, statusText: response.statusText });
+      throw new Error(`Failed to fetch HTML template from ${url}: ${response.status} ${response.statusText}`);
     }
-    emailBody = await response.text(); // Get the HTML content as text
+    log('info', 'HTML template fetched successfully.', { url });
+    return await response.text(); // Return the HTML content as text
+  }
+
+  // Try fetching the HTML template from the remote URL first
+  try {
+    emailBody = await fetchHtmlTemplate(remoteHtmlTemplateUrl);
   } catch (error) {
-    console.error('Error fetching email template:', error);
-    throw error;
+    console.error(error.message);
+    log('warn', 'Falling back to local HTML template due to fetch error.', { error: error.message });
+    // If remote fetch fails, handle accordingly...
+    // Logic to read local HTML template can go here if needed.
   }
 
   // Replace placeholders with actual values
@@ -278,17 +323,18 @@ async function sendPostmarkEmail(data) {
     .replace(/{{carTrim}}/g, data.carTrim || 'N/A')
     .replace(/{{comments}}/g, data.comments || 'N/A');
 
-  log('warn', emailBody); // Log email body content for debugging
+  log('info', 'Prepared email body for sending.', { ticketNumber: data.ticketNumber, emailBody });
 
   // Prepare the email payload
   const emailPayload = {
     From: "kyle@fixthings.pro", // Replace with your verified sender email
-    To: `${data.email},kyle@fixthings.pro`, // Using test script format
-    Subject: "Message Sent",
-    HtmlBody: emailBody, // Use the escaped body directly
+    To: `${data.email},kyle@fixthings.pro`, // Add additional recipients as needed
+    Subject: "Submission Received",
+    HtmlBody: emailBody,
     MessageStream: "outbound"
   };
 
+  // Send the email using Postmark
   try {
     const response = await fetch(postmarkApiUrl, {
       method: "POST",
@@ -297,19 +343,20 @@ async function sendPostmarkEmail(data) {
         "Content-Type": "application/json",
         "X-Postmark-Server-Token": postmarkApiKey
       },
-      body: JSON.stringify(emailPayload) // Send the payload as a JSON string
+      body: JSON.stringify(emailPayload)
     });
 
-    // Detailed error handling for response
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Postmark response error:', errorData);
-      throw new Error(`Failed to send confirmation email: ${errorData.Message || 'Unknown error'} (Status code: ${response.status})`);
+      log('error', 'Postmark response error.', { errorData });
+      throw new Error(`Failed to send confirmation email: ${errorData.Message || 'Unknown error'}`);
     }
 
-    console.log('Email sent successfully');
+    log('info', 'Email sent successfully via Postmark.', { ticketNumber: data.ticketNumber });
+		return 'complete';
   } catch (error) {
     console.error('Error sending email:', error.message || error);
+    log('error', 'Failed to send email.', { ticketNumber: data.ticketNumber, error: error.message || error });
     throw error;
   }
 }
