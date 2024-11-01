@@ -3,7 +3,7 @@ name: Firebase Deploy
 on:
   push:
     branches:
-      - main  # Specify the branch that triggers the deployment
+      - main # Specify the branch that triggers the deployment
 
 jobs:
   build:
@@ -16,7 +16,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Or the latest LTS version supported by Firebase
+          node-version: "18" # Or the latest LTS version supported by Firebase
+
 
       # - name: Install npm (Latest)
       #   run: npm install -g npm@latest

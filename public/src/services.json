@@ -3,80 +3,60 @@
     "name": "Oil Change",
     "price": "20.00",
     "description": "Change your engine oil and filter.",
-    "expenses": [
-      { "name": "Labor (1 hour)", "cost": "20.00" }
-    ]
+    "expenses": [{ "name": "Labor (1 hour)", "cost": "20.00" }]
   },
   {
     "name": "Brake Pad Replacement",
     "price": "80.00",
     "description": "Replace brake pads and inspect rotors.",
-    "expenses": [
-      { "name": "Labor (2 hours)", "cost": "40.00" }
-    ]
+    "expenses": [{ "name": "Labor (2 hours)", "cost": "40.00" }]
   },
   {
     "name": "Battery Replacement",
     "price": "20.00",
     "description": "Replace your car battery with a new one.",
-    "expenses": [
-      { "name": "Labor (1 hour)", "cost": "20.00" }
-    ]
+    "expenses": [{ "name": "Labor (1 hour)", "cost": "20.00" }]
   },
   {
     "name": "Air Filter Replacement",
     "price": "10.00",
     "description": "Replace your air filter to improve engine performance.",
-    "expenses": [
-      { "name": "Labor (0.5 hour)", "cost": "10.00" }
-    ]
+    "expenses": [{ "name": "Labor (0.5 hour)", "cost": "10.00" }]
   },
   {
     "name": "Headlight Replacement",
     "price": "20.00",
     "description": "Replace your headlights with new bulbs.",
-    "expenses": [
-      { "name": "Labor (1 hour)", "cost": "20.00" }
-    ]
+    "expenses": [{ "name": "Labor (1 hour)", "cost": "20.00" }]
   },
   {
     "name": "Spark Plug Replacement",
     "price": "30.00",
     "description": "Replace spark plugs to ensure smooth engine operation.",
-    "expenses": [
-      { "name": "Labor (1.5 hours)", "cost": "30.00" }
-    ]
+    "expenses": [{ "name": "Labor (1.5 hours)", "cost": "30.00" }]
   },
   {
     "name": "Timing Belt Replacement",
     "price": "100.00",
     "description": "Replace your timing belt to avoid engine damage.",
-    "expenses": [
-      { "name": "Labor (5 hours)", "cost": "100.00" }
-    ]
+    "expenses": [{ "name": "Labor (5 hours)", "cost": "100.00" }]
   },
   {
     "name": "Water Pump Replacement",
     "price": "80.00",
     "description": "Replace a faulty water pump to keep your engine cool.",
-    "expenses": [
-      { "name": "Labor (4 hours)", "cost": "80.00" }
-    ]
+    "expenses": [{ "name": "Labor (4 hours)", "cost": "80.00" }]
   },
   {
     "name": "Engine Rebuild",
     "price": "800.00",
     "description": "Complete engine rebuild including replacing worn components.",
-    "expenses": [
-      { "name": "Labor (40 hours)", "cost": "800.00" }
-    ]
+    "expenses": [{ "name": "Labor (40 hours)", "cost": "800.00" }]
   },
   {
     "name": "Suspension Replacement",
     "price": "160.00",
     "description": "Replace suspension components for improved handling.",
-    "expenses": [
-      { "name": "Labor (8 hours)", "cost": "160.00" }
-    ]
+    "expenses": [{ "name": "Labor (8 hours)", "cost": "160.00" }]
   }
 ]

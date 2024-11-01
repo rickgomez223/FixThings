@@ -8,10 +8,10 @@
 /*            Root          */
 /**/
 /**/
-* { 
-	margin: auto;
-	padding: 0;
-	box-sizing: border-box;
+* {
+  margin: auto;
+  padding: 0;
+  box-sizing: border-box;
 }
 html {
   height: 100%;
@@ -19,26 +19,26 @@ html {
 }
 
 h1 {
-  font-size: 2rem; 
+  font-size: 2rem;
 }
 
 h2 {
-  font-size: 1.75rem; 
+  font-size: 1.75rem;
 }
 
 h3 {
-  font-size: 1.5rem; 
+  font-size: 1.5rem;
 }
 
 p {
-  font-size: 1rem; 
+  font-size: 1rem;
 }
 body {
-	height: auto;
-	width: auto;
-	padding-left: 10px;
-	padding-right: 10px;
-	margin: auto;
+  height: auto;
+  width: auto;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: auto;
 }
 /**/
 /**/
@@ -52,8 +52,8 @@ body {
 /**/
 /**/
 .hidden {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   display: none;
 }
 /**/
@@ -65,44 +65,44 @@ body {
 /**/
 /**/
 .nav {
-	height: auto;
-	width: 100%;
-	text-align: center;
-	top: 0; 
-	left: 0;
-	right: 0;
-  position: sticky; 
+  height: auto;
+  width: 100%;
+  text-align: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: sticky;
   z-index: 1000;
-	background-color: white;
-	padding: 10px;
+  background-color: white;
+  padding: 10px;
 }
-.nav>h1 {
-	height: auto;
-	width: auto;
+.nav > h1 {
+  height: auto;
+  width: auto;
 }
 .homeSection {
-	height: auto;
-	width: 100%;
-	padding: 10px;
+  height: auto;
+  width: 100%;
+  padding: 10px;
 }
 .welcome {
-	height: auto;
-	width: 100%;
+  height: auto;
+  width: 100%;
 }
 /**/
 /* Carousel */
 /**/
 .carousel-container {
-	height: auto;
-	width: 100%;
-	text-align: center;
-	/* align-content: center; */
+  height: auto;
+  width: 100%;
+  text-align: center;
+  /* align-content: center; */
   overflow: hidden;
 }
 
 .carousel-slide {
-	height: auto;
-	width: 400%;
+  height: auto;
+  width: 400%;
   display: flex;
   transition: transform 0.4s ease-in-out;
 }
@@ -138,38 +138,38 @@ body {
 /**/
 /**/
 .aboutMe {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
 }
-.aboutMe>h2 {
-	height: auto;
-	width: auto;
+.aboutMe > h2 {
+  height: auto;
+  width: auto;
 }
 .aboutMeTxt {
-	height: auto;
-	width: auto;	
+  height: auto;
+  width: auto;
 }
 .servicesSection {
-	height: auto;
-	width: 100%;
-	padding: 10px;
+  height: auto;
+  width: 100%;
+  padding: 10px;
 }
-.servicesSection>h2 {
-	height: auto;
-	width: auto;
+.servicesSection > h2 {
+  height: auto;
+  width: auto;
 }
 .services {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   display: flex;
   flex-wrap: wrap; /* Allow wrapping to new rows */
   justify-content: space-between; /* Space items evenly */
 }
 
 .serviceList {
-	height: auto;
-	width: auto;
-	list-style-type: none;
+  height: auto;
+  width: auto;
+  list-style-type: none;
   padding: 0;
   display: flex;
   flex-wrap: wrap; /* Allow items to wrap to the next row */
@@ -177,55 +177,55 @@ body {
 }
 
 .serviceList li {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   flex: 1 1 calc(50% - 10px); /* 50% width with space for gaps */
   margin-bottom: 10px; /* Space between rows */
   box-sizing: border-box; /* Include padding and border in width */
-	color: green;
+  color: green;
 }
 
 .servicesImg {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   max-width: 250px; /* Limit max width */
 }
 .pricing {
-	height: auto;
-	width: auto;
-	padding: 10px;
+  height: auto;
+  width: auto;
+  padding: 10px;
 }
-.pricing>h2 {
-	height: auto;
-	width: auto;
+.pricing > h2 {
+  height: auto;
+  width: auto;
 }
 .pricingtxt {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
 }
 .manualPricingTxt {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
 }
-.manualPricingTxt>p {
-	height: auto;
-	width: auto;
+.manualPricingTxt > p {
+  height: auto;
+  width: auto;
 }
 .pricingSheet {
   height: auto;
-	width: auto;
+  width: auto;
   border: 1px solid lightgray; /* Add a light gray border */
   padding: 10px; /* Add padding */
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Add an inset box shadow */
 }
 .pricingSheet tr:nth-child(even) {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   background-color: lightgray;
 }
 .pricingSheet a {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   /* Style the anchor tags inside the table */
   text-decoration: none; /* Remove the default underline */
   color: green; /* Set the link color */
@@ -233,15 +233,15 @@ body {
   cursor: pointer; /* Change the cursor to a pointer */
 }
 .pricingSheet a:hover {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   /* Style the link on hover */
   color: darkblue; /* Change the color on hover */
   text-decoration: underline; /* Add an underline on hover */
 }
 .servicePopup {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -253,145 +253,142 @@ body {
   width: 300px;
   z-index: 10;
 }
-.popup-content { 
-	height: auto;
-	width: auto;
+.popup-content {
+  height: auto;
+  width: auto;
 }
 .close-button {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   position: absolute;
   top: 10px;
   right: 10px;
   cursor: pointer;
   font-size: 18px;
 }
-.popup-content>h2, 
-.popup-content>p,
-.popup-content>h3 {
-	height: auto;
-	width: auto;
+.popup-content > h2,
+.popup-content > p,
+.popup-content > h3 {
+  height: auto;
+  width: auto;
   text-align: center;
 }
 .servicePopup.hidden {
-	height: auto;
-	width: auto;
+  height: auto;
+  width: auto;
   pointer-events: none; /* Disable pointer events when hidden */
 }
 .contactMe {
-	height: auto;
-	width: auto;
-	padding: 10px;
+  height: auto;
+  width: auto;
+  padding: 10px;
 }
 
-
 .contactForm {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            max-width: 500px;
-            width: 100%;
-        }
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+}
 
-        .contactForm h2 {
-            text-align: center;
-            color: #444;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
+.contactForm h2 {
+  text-align: center;
+  color: #444;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
 
-        .contactForm label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-            color: #555;
-        }
+.contactForm label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #555;
+}
 
-        .contactForm select,
-        .contactForm input,
-        .contactForm textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            margin-bottom: 15px;
-            font-size: 0.95em;
-        }
+.contactForm select,
+.contactForm input,
+.contactForm textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  font-size: 0.95em;
+}
 
-        .contactForm textarea {
-            resize: vertical;
-            height: 80px;
-        }
+.contactForm textarea {
+  resize: vertical;
+  height: 80px;
+}
 
-        .contactForm button {
-            width: 100%;
-            background-color: #4CAF50;
-            color: #fff;
-            font-size: 1em;
-            font-weight: bold;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+.contactForm button {
+  width: 100%;
+  background-color: #4caf50;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-        .contactForm button:hover {
-            background-color: #45a049;
-        }
+.contactForm button:hover {
+  background-color: #45a049;
+}
 
-        /* VIN Information Notice */
-        .vin-notice {
-            font-size: 0.85em;
-            color: #777;
-            margin-top: -10px;
-            margin-bottom: 15px;
-        }
+/* VIN Information Notice */
+.vin-notice {
+  font-size: 0.85em;
+  color: #777;
+  margin-top: -10px;
+  margin-bottom: 15px;
+}
 
-				
-				.contact-form {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+.contact-form {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
 .contact-form h2 {
-    text-align: center;
+  text-align: center;
 }
 
 .contact-form label {
-    display: block;
-    margin-bottom: 5px;
+  display: block;
+  margin-bottom: 5px;
 }
 
 .contact-form input,
 .contact-form textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .contact-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  width: 100%;
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .contact-form button:hover {
-    background-color: #45a049;
+  background-color: #45a049;
 }
-				
-				
+
 footer {
   background-color: #f0f0f0;
   padding: 20px;
