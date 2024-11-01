@@ -1,4 +1,4 @@
-const apiEndpoint = "https://vpic.nhtsa.dot.gov/api/vehicles/";
+
 
 // Your main JS file
 
@@ -18,7 +18,7 @@ async function initializeApp() {
     await loadAboutMe();
     await loadCarousel();
     await loadPricingText();
-    populateYearsDropdown(); // Only call this once here
+    
     startApp();
   } catch (error) {
     log('warn', 'App Initialization Failed');
@@ -39,7 +39,7 @@ async function loadServices() {
       appendServiceToPricingTable(pricingTable, service);
 			
     });
-		populateServicesDropdown();
+		
   } catch (error) {
     log('error', 'Failed to load services JSON');
     log('error', error);
@@ -136,46 +136,16 @@ async function loadPricingText() {
   }
 }
 
-function populateYearsDropdown() {
-  const yearDropdown = document.getElementById('year');
-  const currentYear = new Date().getFullYear();
-
-  yearDropdown.innerHTML = '<option value="">Select Year</option>';
-  for (let year = currentYear; year >= 1980; year--) {
-    const option = document.createElement("option");
-    option.value = year;
-    option.text = year;
-    yearDropdown.appendChild(option);
-  }
-}
-
-function populateServicesDropdown() {
-  try {
-    const serviceDropdown = document.getElementById('service');
-    const servicesList = document.getElementById('services-list');
-    servicesList.querySelectorAll('li').forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.textContent;
-      option.text = item.textContent;
-      serviceDropdown.appendChild(option);
-    });
-  } catch (error) {
-    log('error', 'Failed to populate services dropdown');
-    log('error', error);
-  }
-}
 
 async function startApp() {
   log('info', 'App Started');
   try {
     
-    document.getElementById('type').addEventListener('change', fetchMakes);
-    document.getElementById('year').addEventListener('change', fetchModels);
-    document.getElementById('make').addEventListener('change', fetchModels);
+    
  
 		// Event listeners to handle form submissions
-		document.getElementById('booking-form').addEventListener('submit', handleFormSubmit);
-		document.querySelector('.contact-form form').addEventListener('submit', handleFormSubmit);
+		
+		document.getElementById('contact-form').addEventListener('submit', handleFormSubmit);
 
   } catch (error) {
     log('warn', 'App Start Failed');
@@ -183,53 +153,7 @@ async function startApp() {
   }
 }
 
-async function fetchMakes() {
-  const makeDropdown = document.getElementById("make");
-  makeDropdown.innerHTML = '<option value="">Select Make</option>';
-  const uiType = document.getElementById('type').value;
-  if (!uiType) return log('warn', 'Please select a type of vehicle.');
 
-  try {
-    const response = await fetch(`${apiEndpoint}GetMakesForVehicleType/${uiType}?format=json`);
-    if (!response.ok) throw new Error(`Failed to fetch makes: ${response.statusText}`);
-
-    const makes = await response.json();
-    makes.Results.forEach(make => {
-      const option = document.createElement("option");
-      option.value = make.MakeId;
-      option.text = make.MakeName;
-      makeDropdown.appendChild(option);
-    });
-  } catch (error) {
-    log('error', `Error fetching makes: ${error.message}`);
-  }
-}
-
-async function fetchModels() {
-  const modelDropdown = document.getElementById("model");
-  modelDropdown.innerHTML = '<option value="">Select Model</option>';
-  const uiYear = document.getElementById('year').value;
-  const uiMakeId = document.getElementById('make').value;
-  const uiType = document.getElementById('type').value;
-  if (!uiYear || !uiMakeId) return log('warn', 'Please select both a year and a make to fetch models.');
-
-  try {
-    const response = await fetch(`${apiEndpoint}GetModelsForMakeIdYear/makeId/${uiMakeId}/modelyear/${uiYear}/vehicletype/${uiType}?format=json`);
-    if (!response.ok) throw new Error(`Failed to fetch models: ${response.statusText}`);
-
-    const models = await response.json();
-    if (models.Count === 0) return log('info', `No models found for make ID ${uiMakeId} in ${uiYear}.`);
-
-    models.Results.forEach(model => {
-      const option = document.createElement("option");
-      option.value = model.Model_ID;
-      option.text = model.Model_Name;
-      modelDropdown.appendChild(option);
-    });
-  } catch (error) {
-    log('error', `Error fetching models: ${error.message}`);
-  }
-}
 
 // Main form submission handler
 async function handleFormSubmit(event) {
@@ -241,6 +165,7 @@ async function handleFormSubmit(event) {
   // Retrieve values from the contact form
   const name = document.getElementById('name').value;
   const email = document.getElementById('email').value;
+	const phone = document.getElementById('phone').value;
   const carYear = document.getElementById('car-year').value;
   const carMake = document.getElementById('car-make').value;
   const carModel = document.getElementById('car-model').value;
@@ -257,6 +182,7 @@ async function handleFormSubmit(event) {
   const data = {
     name,
     email,
+		phone,
     carYear,
     carMake,
     carModel,
@@ -264,7 +190,7 @@ async function handleFormSubmit(event) {
     comments,
     timestamp: new Date().toISOString(),
   };
-
+log('info', data);
   try {
     // Step 1: Get customer count and assign unique ticket number
     const ticketNumber = await incrementCustomerCount();
@@ -322,31 +248,10 @@ async function saveCustomerToFirebase(data) {
   }
 }
 
-// Step 3: Send Pushcut webhook
-async function sendPushcutWebhook(data) {
-  try {
-    const webhookUrl = 'https://api.pushcut.io/VEQktvCTFnpchKTT3TsIK/notifications/FWA';
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        notification: 'New Booking Submitted',
-        title: 'New Booking',
-        text: `Ticket #${data.ticketNumber}: ${data.name} submitted a form.`,
-      }),
-    });
-
-    if (!response.ok) throw new Error('Failed to send Pushcut webhook');
-  } catch (error) {
-    console.error('Error sending Pushcut webhook:', error);
-    throw new Error('Failed to notify Pushcut.');
-  }
-}
-
 async function sendPostmarkEmail(data) {
-  const postmarkApiUrl = "https://api.postmarkapp.com/email";
+  const postmarkApiUrl = "https://api.postmarkapp.com/email"; // Removed trailing slash
   const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Replace with your Postmark server key
-  const htmlTemplateUrl = './customerSignupEmail.html'; // URL to your hosted HTML template
+  const htmlTemplateUrl = 'https://fixthings.pro/customerSignupEmail.html'; // Ensure this URL is correct
 
   let emailBody;
 
@@ -373,7 +278,17 @@ async function sendPostmarkEmail(data) {
     .replace(/{{carTrim}}/g, data.carTrim || 'N/A')
     .replace(/{{comments}}/g, data.comments || 'N/A');
 
-		log('warn', emailBody);
+  log('warn', emailBody); // Log email body content for debugging
+
+  // Prepare the email payload
+  const emailPayload = {
+    From: "kyle@fixthings.pro", // Replace with your verified sender email
+    To: `${data.email},kyle@fixthings.pro`, // Using test script format
+    Subject: "Message Sent",
+    HtmlBody: emailBody, // Use the escaped body directly
+    MessageStream: "outbound"
+  };
+
   try {
     const response = await fetch(postmarkApiUrl, {
       method: "POST",
@@ -382,20 +297,14 @@ async function sendPostmarkEmail(data) {
         "Content-Type": "application/json",
         "X-Postmark-Server-Token": postmarkApiKey
       },
-      body: JSON.stringify({
-        From: "kyle@fixthings.pro", // Replace with your verified sender email
-        To: `${data.email},kyle@fixthings.pro`,
-        Subject: "Submission Received",
-        HtmlBody: emailBody,
-        MessageStream: "outbound"
-      })
+      body: JSON.stringify(emailPayload) // Send the payload as a JSON string
     });
 
     // Detailed error handling for response
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Postmark response error:', errorData);
-      throw new Error(`Failed to send confirmation email: ${errorData.Message || 'Unknown error'}`);
+      throw new Error(`Failed to send confirmation email: ${errorData.Message || 'Unknown error'} (Status code: ${response.status})`);
     }
 
     console.log('Email sent successfully');
@@ -405,6 +314,8 @@ async function sendPostmarkEmail(data) {
   }
 }
 
+// Logging function
+
 function log(type, message) {
   const allowedTypes = ['log', 'warn', 'error', 'info'];
   if (allowedTypes.includes(type)) {
@@ -413,3 +324,46 @@ function log(type, message) {
     console.log(`[${new Date().toISOString()}] Invalid log type: ${type}`);
   }
 }
+
+// Debugging function with button creation at the bottom of the script
+(function() {
+  // Function to auto-fill and submit the form with sample data
+  function autoFillFormAndSubmit() {
+    // Define sample data
+    const sampleData = {
+      name: "Kyle Fixit",
+      email: "kyle@fixthings.pro",
+      phone: "123-456-7890",
+      carYear: "2014",
+      carMake: "Chevy",
+      carModel: "Cruze",
+      carTrim: "Eco",
+      comments: "Debugging form submission",
+    };
+
+    // Fill out the form fields with sample data
+    document.getElementById('name').value = sampleData.name;
+    document.getElementById('email').value = sampleData.email;
+    document.getElementById('phone').value = sampleData.phone;
+    document.getElementById('car-year').value = sampleData.carYear;
+    document.getElementById('car-make').value = sampleData.carMake;
+    document.getElementById('car-model').value = sampleData.carModel;
+    document.getElementById('car-trim').value = sampleData.carTrim;
+    document.getElementById('comments').value = sampleData.comments;
+
+    // Log sample data for debugging
+    log('info', 'Auto-filled form with sample data:', sampleData);
+
+    // Submit the form
+    document.getElementById('contact-form').dispatchEvent(new Event('submit'));
+  }
+
+  // Create a button to trigger the debugging function
+  const debugButton = document.createElement('button');
+  debugButton.textContent = "Auto-Fill Form and Submit";
+  debugButton.style.position = "fixed";
+  debugButton.style.bottom = "10px";
+  debugButton.style.right = "10px";
+  debugButton.onclick = autoFillFormAndSubmit;
+  document.body.appendChild(debugButton);
+})();
