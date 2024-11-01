@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-recommended-scss"
+  ],
+  "plugins": [
+    "stylelint-order"
+  ],
+  "rules": {
+    "color-hex-length": "short",
+    "declaration-no-important": true,
+    "block-no-empty": true,
+    "color-named": "never",
+    "selector-max-id": 0,
+    "declaration-block-no-duplicate-properties": true,
+    "declaration-colon-space-after": "always",
+    "declaration-colon-space-before": "never",
+    "length-zero-no-unit": true,
+    "order/properties-alphabetical-order": true,
+    "selector-class-pattern": "^[a-z0-9\-]+$",
+    "selector-no-qualifying-type": [true, { "ignore": ["attribute"] }],
+    "selector-max-universal": 1,
+    "value-list-comma-space-after": "always-single-line",
+    "max-nesting-depth": 3,
+    "string-quotes": "double"
+  }
+}

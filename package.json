@@ -6,7 +6,19 @@
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "eslint": "^9.13.0",
+    "eslint-plugin-import": "^2.31.0",
     "globals": "^15.11.0",
-    "prettier": "^3.3.3"
+    "htmlhint": "^1.1.4",
+    "prettier": "^3.3.3",
+    "stylelint": "^16.10.0",
+    "stylelint-config-recommended-scss": "^14.1.0",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-order": "^6.0.4"
+  },
+  "scripts": {
+    "lint:js": "eslint . --ext .js",
+    "lint:css": "stylelint '**/*.css'",
+    "lint:html": "htmlhint '**/*.html'",
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:html"
   }
 }
