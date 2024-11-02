@@ -1,6 +1,9 @@
 {
   "dependencies": {
     "firebase": "^11.0.1"
+    "@google-cloud/functions": "^3.6.0",
+    "firebase": "^11.0.1",
+    "mailgun.js": "^10.2.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
