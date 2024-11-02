@@ -4,22 +4,21 @@ const firebase = require("firebase-admin");
 const postmark = require("postmark");
 const bodyParser = require("body-parser");
 const fs = require("fs");
+const functions = require('firebase-functions');
+
 
 // === Configuration Variables ===
 
-// Firebase configuration
-const FIREBASE_DB_URL = "https://your-firebase-db-url.firebaseio.com";
-
-// Paths for key files
-const PRIVATE_KEY_PATH = "path/to/private_key.pem";  // Adjust path as needed
+const PRIVATE_KEY_PATH = functions.config().myapp.private_key;  // Access your private key
+const FIREBASE_DB_URL = functions.config().myapp.firebase_db_url;  // Access your Firebase DB URL
 
 // Postmark configuration
-const POSTMARK_SERVER_KEY = "YOUR_POSTMARK_SERVER_KEY";
-const POSTMARK_FROM_EMAIL = "you@yourdomain.com";
+const POSTMARK_SERVER_KEY = functions.config().myapp.postmark_server_key;
+const POSTMARK_FROM_EMAIL = "kyle@fixthings.pro";
 const POSTMARK_TEMPLATE_ALIAS = "CustomerSignupEmail";
 
 // Pushcut Webhook URL
-const PUSHCUT_WEBHOOK_URL = "YOUR_PUSH_NOTIFICATION_WEBHOOK_URL";
+const PUSHCUT_WEBHOOK_URL = functions.config().myapp.pushcut_webhook_url;
 
 // ================================
 
