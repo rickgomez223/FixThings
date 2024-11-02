@@ -67,7 +67,7 @@ function appendServiceToPricingTable(pricingTable, service) {
   serviceNameCell.appendChild(serviceLink);
 
   const priceCell = document.createElement("td");
-  priceCell.textContent = `$${service.price.replace("$", "")}`;
+  priceCell.textContent = `${service.price.replace("$", "")}`;
 
   const descriptionCell = document.createElement("td");
   descriptionCell.textContent = service.description;
@@ -160,7 +160,7 @@ async function startApp() {
 
 // Main form submission handler
 async function handleFormSubmit(event) {
-  event.preventDefault();
+  //event.preventDefault();
 
   // Define the contact form
   const form = event.target;
@@ -193,7 +193,7 @@ async function handleFormSubmit(event) {
   }
 
   // Collect contact form data into an object
-  const data = {
+  var data = {
     name,
     email,
     phone,
@@ -307,106 +307,56 @@ async function sendPushcutWebhook(data) {
 
 // Step 4: Send confirmation email via Postmark
 async function sendPostmarkEmail(data) {
-  const postmarkApiUrl = "https://api.postmarkapp.com/email";
-  const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Replace with your Postmark server key
-  const remoteHtmlTemplateUrl = "./src/customerSignupEmail.html"; // Remote URL
+    const postmarkApiUrl = "https://api.postmarkapp.com/email/withTemplate"; // Use the email/template endpoint
+    const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Your Postmark server key
 
-  let emailBody;
+    // Prepare the template model with dynamic values
+    const templateModel = {
+        name: data.name || "Customer",
+        ticketNumber: data.ticketNumber || "N/A",
+        phone: data.phone || "N/A",
+        carYear: data.carYear || "N/A",
+        carMake: data.carMake || "N/A",
+        carModel: data.carModel || "N/A",
+        carTrim: data.carTrim || "N/A",
+        comments: data.comments || "N/A",
+    };
 
-  // Function to fetch the HTML template from a URL
-  async function fetchHtmlTemplate(url) {
-    log("info", "Fetching HTML template from remote URL.", { url });
+    // Log the model for debugging
+    console.log("Template model prepared for sending:", templateModel);
+
+    // Prepare the email payload, matching the CURL structure
+    const emailPayload = {
+        From: "kyle@fixthings.pro", // Replace with your verified sender email
+        To: data.email, // The recipient's email address
+        TemplateAlias: "CustomerSignupEmail", // Use the template alias instead of ID
+        TemplateModel: templateModel, // Pass the model with dynamic values
+    };
+
+    // Send the email using Postmark
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        log("error", "Failed to fetch HTML template.", {
-          url,
-          status: response.status,
-          statusText: response.statusText,
+        const response = await fetch(postmarkApiUrl, {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "X-Postmark-Server-Token": postmarkApiKey,
+            },
+            body: JSON.stringify(emailPayload), // Send the payload directly
         });
-        throw new Error(
-          `Failed to fetch HTML template from ${url}: ${response.status} ${response.statusText}`
-        );
-      }
-      log("info", "HTML template fetched successfully.", { url });
-      return await response.text(); // Return the HTML content as text
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Postmark response error:", errorData);
+            throw new Error(`Failed to send confirmation email: ${errorData.Message || "Unknown error"}`);
+        }
+
+        console.log("Email sent successfully via Postmark for ticket number:", data.ticketNumber);
+        return "complete"; // Indicate successful completion
     } catch (error) {
-      log("error", "Error in fetching HTML template.", { error: error.message });
-      throw error; // Re-throw to handle it in the main function
+        console.error("Error sending email:", error.message || error);
+        throw error; // Ensure to propagate the error for further handling
     }
-  }
-
-  // Try fetching the HTML template from the remote URL first
-  try {
-    emailBody = await fetchHtmlTemplate(remoteHtmlTemplateUrl);
-  } catch (error) {
-    console.error(error.message);
-    log("warn", "Falling back to local HTML template due to fetch error.", {
-      error: error.message,
-    });
-    // If remote fetch fails, handle accordingly...
-    // Logic to read local HTML template can go here if needed.
-    emailBody = "<p>Fallback local HTML template here.</p>"; // Replace with actual local HTML loading logic if necessary
-  }
-
-  // Replace placeholders with actual values
-  emailBody = emailBody
-    .replace(/{{name}}/g, data.name || "Customer")
-    .replace(/{{ticketNumber}}/g, data.ticketNumber || "N/A")
-    .replace(/{{phone}}/g, data.phone || "N/A")
-    .replace(/{{carYear}}/g, data.carYear || "N/A")
-    .replace(/{{carMake}}/g, data.carMake || "N/A")
-    .replace(/{{carModel}}/g, data.carModel || "N/A")
-    .replace(/{{carTrim}}/g, data.carTrim || "N/A")
-    .replace(/{{comments}}/g, data.comments || "N/A");
-
-  // Log the prepared email body for preview
-  log("info", "Prepared email body for sending.", {
-    ticketNumber: data.ticketNumber,
-    emailBody: emailBody, // Log the email body for preview
-  });
-
-  // Prepare the email payload
-  const emailPayload = {
-    From: "kyle@fixthings.pro", // Replace with your verified sender email
-    To: `${data.email},kyle@fixthings.pro`, // Add additional recipients as needed
-    Subject: "Submission Received",
-    HtmlBody: emailBody,
-    MessageStream: "outbound",
-  };
-
-  // Send the email using Postmark
-  try {
-    const response = await fetch(postmarkApiUrl, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": postmarkApiKey,
-      },
-      body: JSON.stringify(emailPayload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      log("error", "Postmark response error.", { errorData });
-      throw new Error(
-        `Failed to send confirmation email: ${errorData.Message || "Unknown error"}`
-      );
-    }
-
-    log("info", "Email sent successfully via Postmark.", {
-      ticketNumber: data.ticketNumber,
-    });
-    return "complete";
-  } catch (error) {
-    console.error("Error sending email:", error.message || error);
-    log("error", "Failed to send email.", {
-      ticketNumber: data.ticketNumber,
-      error: error.message || error,
-    });
-    throw error; // Ensure to propagate the error
-  }
 }
 
 // Logging function
@@ -432,8 +382,8 @@ function log(type, message, data = {}) {
     // Define sample data
     const sampleData = {
       name: "Kyle Fixit",
-      email: "kyle@fixthings.pro",
-      phone: "123-456-7890",
+      email: "rickgomez223@gmail.com",
+      phone: "1234567890",
       carYear: "2014",
       carMake: "Chevy",
       carModel: "Cruze",
@@ -462,7 +412,7 @@ function log(type, message, data = {}) {
   const debugButton = document.createElement("button");
   debugButton.textContent = "Auto-Fill Form and Submit";
   debugButton.style.position = "fixed";
-  debugButton.style.bottom = "10px";
+  debugButton.style.top = "150px";
   debugButton.style.right = "10px";
   debugButton.onclick = autoFillFormAndSubmit;
   document.body.appendChild(debugButton);
