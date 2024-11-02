@@ -158,14 +158,11 @@ async function startApp() {
   }
 }
 
-// Main form submission handler
 async function handleFormSubmit(event) {
-  //event.preventDefault();
-
-  // Define the contact form
+  event.preventDefault();
   const form = event.target;
 
-  // Retrieve values from the contact form
+  // Collect and validate form data
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const phone = document.getElementById("phone").value;
@@ -175,25 +172,13 @@ async function handleFormSubmit(event) {
   const carTrim = document.getElementById("car-trim").value;
   const comments = document.getElementById("comments").value;
 
-  // Validation: Ensure all required fields are provided
   if (!(name && email && carYear && carMake && carModel && carTrim)) {
-    alert(
-      "Please provide your name, email & the complete vehicle information.",
-    );
-    log("error", "Validation failed: Missing required fields.", {
-      name,
-      email,
-      carYear,
-      carMake,
-      carModel,
-      carTrim,
-      comments,
-    });
+    alert("Please provide your name, email & the complete vehicle information.");
     return;
   }
 
-  // Collect contact form data into an object
-  var data = {
+  // Prepare data object
+  const data = {
     name,
     email,
     phone,
@@ -202,161 +187,75 @@ async function handleFormSubmit(event) {
     carModel,
     carTrim,
     comments,
-    timestamp: new Date().toISOString(),
   };
 
-  log("info", "Form submission initiated.", data);
-
   try {
-    // Step 1: Get customer count and assign unique ticket number
-    const ticketNumber = await incrementCustomerCount();
-    data.ticketNumber = ticketNumber; // Assign the unique ticket number
-    log("info", "Customer count incremented successfully.", { ticketNumber });
+    // Step 1: Retrieve the public key
+    const pubKeyResponse = await fetch("https://yourdomain.com/fixthings-webencrypt.pub");
+    const publicKeyPEM = await pubKeyResponse.text();
+    const publicKey = await importPublicKey(publicKeyPEM);
 
-    // Step 2: Save customer info to Firebase
-    await saveCustomerToFirebase(data);
-    log("info", "Customer data saved to Firebase successfully.", {
-      ticketNumber,
+    // Step 2: Encrypt the data
+    const encryptedData = await encryptData(data, publicKey);
+
+    // Step 3: Send encrypted data to server
+    const response = await fetch("/api/formSubmit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ encryptedData }),
     });
 
-    // Step 3: Send webhook to Pushcut
-    await sendPushcutWebhook(data);
-    log("info", "Pushcut webhook sent successfully.", { ticketNumber });
+    const result = await response.json();
 
-    // Step 4: Send confirmation email via Postmark
-    await sendPostmarkEmail(data);
-    log("info", "Confirmation email sent successfully.", { ticketNumber });
-
-    // Notify user of success
-    alert(
-      `Form submitted successfully! Your ticket number is #${ticketNumber}`,
-    );
-    form.reset(); // Reset the form after submission
-  } catch (error) {
-    console.error("Submission failed:", error);
-    alert("There was an issue with submission. Please try again later.");
-    log("error", "Submission failed with error.", {
-      error: error.message || error,
-    });
-  }
-}
-
-// Step 1: Increment customer count and return the new count
-async function incrementCustomerCount() {
-  log("info", "Starting to increment customer count.");
-  try {
-    const customerCountRef = ref(db, "meta/customerCount");
-    const snapshot = await get(customerCountRef);
-
-    let newCount;
-    if (!snapshot.exists()) {
-      newCount = 1;
-      await set(customerCountRef, { count: newCount });
-      log("info", "Customer count initialized.", { count: newCount });
+    if (response.ok) {
+      alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
+      form.reset();
     } else {
-      const currentCount = snapshot.val().count;
-      newCount = currentCount + 1;
-      await set(customerCountRef, { count: newCount });
-      log("info", "Customer count updated.", { currentCount, newCount });
+      alert("Submission failed. Please try again later.");
     }
-
-    return newCount;
   } catch (error) {
-    console.error("Error incrementing customer count:", error.message || error);
-    log("error", "Failed to increment customer count.", {
-      error: error.message || error,
-    });
-    throw new Error("Failed to generate ticket number.");
+    console.error("Error during form submission:", error);
+    alert("There was an issue with submission. Please try again later.");
   }
 }
 
-// Step 2: Save customer data to Firebase
-async function saveCustomerToFirebase(data) {
-  log("info", "Starting to save customer data to Firebase.", {
-    ticketNumber: data.ticketNumber,
-  });
-  try {
-    const customerRef = ref(db, "customers/" + data.ticketNumber);
-    await set(customerRef, data);
-    log("info", "Customer data saved to Firebase.", {
-      ticketNumber: data.ticketNumber,
-    });
-    return "complete"; // Indicate completion
-  } catch (error) {
-    console.error("Error saving customer data to Firebase:", error);
-    log("error", "Failed to save customer data to Firebase.", {
-      error: error.message || error,
-    });
-    throw new Error("Failed to save customer data.");
+// Helper function to import the public key
+async function importPublicKey(pemKey) {
+  const binaryDer = str2ab(pemKey); // Convert PEM to ArrayBuffer
+  return await crypto.subtle.importKey(
+    "spki",
+    binaryDer,
+    { name: "RSA-OAEP", hash: "SHA-256" },
+    true,
+    ["encrypt"]
+  );
+}
+
+// Helper function to encrypt data using the public key
+async function encryptData(data, publicKey) {
+  const encoder = new TextEncoder();
+  const encodedData = encoder.encode(JSON.stringify(data));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    publicKey,
+    encodedData
+  );
+  return btoa(String.fromCharCode(...new Uint8Array(encrypted))); // Convert to Base64
+}
+
+// Helper function to convert PEM to ArrayBuffer
+function str2ab(pem) {
+  const b64 = pem
+    .replace(/-----BEGIN PUBLIC KEY-----/, "")
+    .replace(/-----END PUBLIC KEY-----/, "")
+    .replace(/\s+/g, "");
+  const raw = atob(b64);
+  const buffer = new ArrayBuffer(raw.length);
+  const view = new Uint8Array(buffer);
+  for (let i = 0; i < raw.length; i++) {
+    view[i] = raw.charCodeAt(i);
   }
-}
-
-// Step 3: Send webhook to Pushcut
-async function sendPushcutWebhook(data) {
-  log("info", "Sending webhook to Pushcut.", {
-    ticketNumber: data.ticketNumber,
-  });
-  // Your webhook logic here
-  // ...
-
-  log("info", "Webhook to Pushcut sent successfully.", {
-    ticketNumber: data.ticketNumber,
-  });
-  return "complete"; // Indicate completion
-}
-
-// Step 4: Send confirmation email via Postmark
-async function sendPostmarkEmail(data) {
-    const postmarkApiUrl = "https://api.postmarkapp.com/email/withTemplate"; // Use the email/template endpoint
-    const postmarkApiKey = "7456c6b5-9905-4911-9eba-3db1a9f2b4b1"; // Your Postmark server key
-
-    // Prepare the template model with dynamic values
-    const templateModel = {
-        name: data.name || "Customer",
-        ticketNumber: data.ticketNumber || "N/A",
-        phone: data.phone || "N/A",
-        carYear: data.carYear || "N/A",
-        carMake: data.carMake || "N/A",
-        carModel: data.carModel || "N/A",
-        carTrim: data.carTrim || "N/A",
-        comments: data.comments || "N/A",
-    };
-
-    // Log the model for debugging
-    console.log("Template model prepared for sending:", templateModel);
-
-    // Prepare the email payload, matching the CURL structure
-    const emailPayload = {
-        From: "kyle@fixthings.pro", // Replace with your verified sender email
-        To: data.email, // The recipient's email address
-        TemplateAlias: "CustomerSignupEmail", // Use the template alias instead of ID
-        TemplateModel: templateModel, // Pass the model with dynamic values
-    };
-
-    // Send the email using Postmark
-    try {
-        const response = await fetch(postmarkApiUrl, {
-            method: "POST",
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "X-Postmark-Server-Token": postmarkApiKey,
-            },
-            body: JSON.stringify(emailPayload), // Send the payload directly
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Postmark response error:", errorData);
-            throw new Error(`Failed to send confirmation email: ${errorData.Message || "Unknown error"}`);
-        }
-
-        console.log("Email sent successfully via Postmark for ticket number:", data.ticketNumber);
-        return "complete"; // Indicate successful completion
-    } catch (error) {
-        console.error("Error sending email:", error.message || error);
-        throw error; // Ensure to propagate the error for further handling
-    }
+  return buffer;
 }
 
 // Logging function
@@ -417,3 +316,8 @@ function log(type, message, data = {}) {
   debugButton.onclick = autoFillFormAndSubmit;
   document.body.appendChild(debugButton);
 })();
+
+firebase functions:config:set myapp.pushcut_webhook_url="https://api.pushcut.io/VEQktvCTFnpchKTT3TsIK/notifications/FixThings"
+
+
+
