@@ -15,13 +15,13 @@ app.use(bodyParser.json());  // Automatically parse JSON request bodies
 // Initialize Firebase Admin SDK
 firebase.initializeApp({
     credential: firebase.credential.applicationDefault(), // Using default credentials
-    databaseURL: functions.config().myapp.database_url    // Set your database URL
+    databaseURL: Buffer.from(functions.config().myapp.firebase_db_url, 'base64').toString('utf8')   // Set your database URL
 });
 
 const db = firebase.database();  // Firebase database instance
 
 // Load private key for decryption from Firebase config
-const PRIVATE_KEY_PATH = functions.config().myapp.private_key; // Get your RSA private key path from Firebase config
+const PRIVATE_KEY_PATH = Buffer.from(functions.config().myapp.private_key, 'base64').toString('utf8'); // Get your RSA private key path from Firebase config
 
 // Check if the private key file exists
 let privateKey;
