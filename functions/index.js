@@ -8,7 +8,7 @@ const fs = require("fs");                     // For reading files, specifically
 const functions = require('firebase-functions'); // Firebase functions config
 
 // === Configuration Variables ===
-const PRIVATE_KEY_PATH = functions.config().myapp.private_key;  // Path to your RSA private key for decrypting form data
+const PRIVATE_KEY_PATH = Buffer.from(functions.config().myapp.private_key, 'base64').toString('utf8'); // Path to your RSA private key for decrypting form data
 const FIREBASE_DB_URL = functions.config().myapp.firebase_db_url;  // URL to your Firebase Realtime Database
 
 // Postmark configuration
@@ -104,6 +104,9 @@ async function incrementTicketNumber() {
 
     return newCount;
 }
+
+
+
 
 // Send email via Postmark
 async function sendPostmarkEmail(data) {

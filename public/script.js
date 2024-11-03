@@ -317,7 +317,4 @@ function log(type, message, data = {}) {
   document.body.appendChild(debugButton);
 })();
 
-firebase functions:config:set myapp.pushcut_webhook_url="https://api.pushcut.io/VEQktvCTFnpchKTT3TsIK/notifications/FixThings"
-
-
 
