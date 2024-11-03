@@ -191,7 +191,7 @@ async function handleFormSubmit(event) {
 
   try {
     // Step 1: Retrieve the public key
-    const pubKeyResponse = await fetch("https://yourdomain.com/fixthings-webencrypt.pub");
+    const pubKeyResponse = await fetch("./src/fixthings_webencrypt.pub");
     const publicKeyPEM = await pubKeyResponse.text();
     const publicKey = await importPublicKey(publicKeyPEM);
 
