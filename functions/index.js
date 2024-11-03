@@ -5,7 +5,6 @@ const crypto = require("crypto");             // For decrypting data using RSA p
 const firebase = require("firebase-admin");   // Firebase Admin SDK for accessing the Firebase Realtime Database
 const postmark = require("postmark");         // For sending transactional emails via Postmark
 const bodyParser = require("body-parser");    // For parsing incoming request body
-const fs = require("fs");                     // For reading files, specifically the private key
 const fetch = require("node-fetch");          // For making HTTP requests to the Pushcut webhook
 
 // Initialize Express app
@@ -20,17 +19,9 @@ firebase.initializeApp({
 
 const db = firebase.database();  // Firebase database instance
 
-// Load private key for decryption from Firebase config
-const PRIVATE_KEY_PATH = Buffer.from(functions.config().myapp.private_key, 'base64').toString('utf8'); // Get your RSA private key path from Firebase config
-
-// Check if the private key file exists
-let privateKey;
-try {
-    privateKey = fs.readFileSync(PRIVATE_KEY_PATH, "utf8");  // Reading the RSA private key file
-} catch (error) {
-    console.error(`Failed to load private key from ${PRIVATE_KEY_PATH}:`, error);
-    process.exit(1); // Exit the process if the key cannot be loaded
-}
+// Load private key from Firebase config (base64-encoded string)
+const PRIVATE_KEY_BASE64 = functions.config().myapp.private_key; // Get your RSA private key as base64 from Firebase config
+const privateKey = Buffer.from(PRIVATE_KEY_BASE64, 'base64').toString('utf8'); // Decode the base64 string to get the PEM format
 
 // Postmark configuration
 const POSTMARK_SERVER_KEY = Buffer.from(functions.config().myapp.postmark_server_key, 'base64').toString('utf8'); // Base64 decode
