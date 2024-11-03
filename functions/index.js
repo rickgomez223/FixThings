@@ -22,7 +22,15 @@ const db = firebase.database();  // Firebase database instance
 
 // Load private key for decryption from Firebase config
 const PRIVATE_KEY_PATH = functions.config().myapp.private_key; // Get your RSA private key path from Firebase config
-const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, "utf8");  // Reading the RSA private key file
+
+// Check if the private key file exists
+let privateKey;
+try {
+    privateKey = fs.readFileSync(PRIVATE_KEY_PATH, "utf8");  // Reading the RSA private key file
+} catch (error) {
+    console.error(`Failed to load private key from ${PRIVATE_KEY_PATH}:`, error);
+    process.exit(1); // Exit the process if the key cannot be loaded
+}
 
 // Postmark configuration
 const POSTMARK_SERVER_KEY = Buffer.from(functions.config().myapp.postmark_server_key, 'base64').toString('utf8'); // Base64 decode
