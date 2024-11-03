@@ -15,7 +15,7 @@ app.use(bodyParser.json());  // Automatically parse JSON request bodies
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import functions from 'firebase-functions';
+
 
 // Get Firebase configuration from environment variables
 const firebaseConfig = {
