@@ -136,75 +136,215 @@
 
 
 
+// const functions = require("firebase-functions");
+// const admin = require("firebase-admin");
+// const crypto = require("crypto");
+
+// // Initialize Firebase Admin
+// admin.initializeApp();
+// const db = admin.firestore();
+
+// // Retrieve private key from Firebase environment variables
+// const PRIVATE_KEY_BASE64 = functions.config().myapp.private_key;
+// const privateKeyPEM = Buffer.from(PRIVATE_KEY_BASE64, "base64").toString("utf8");
+
+// exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
+//   // Validate the request method
+//   if (req.method !== "POST") {
+//     return res.status(405).json({ success: false, message: "Method Not Allowed" });
+//   }
+
+//   try {
+//     const { encryptedData } = req.body;
+
+//     if (!encryptedData) {
+//       throw new Error("No data provided for decryption");
+//     }
+
+//     // Decode and decrypt the data
+//     const decryptedData = decryptData(encryptedData);
+//     const formData = JSON.parse(decryptedData);
+
+//     // Generate a ticket number
+//     const ticketNumber = `TICKET-${Date.now().toString().slice(-6)}`;
+
+//     // Save to Firestore
+//     await db.collection("formSubmissions").add({ ...formData, ticketNumber });
+
+//     // Send back the success response
+//     res.status(200).json({
+//       success: true,
+//       ticketNumber,
+//       message: "Form submitted successfully",
+//     });
+//   } catch (error) {
+//     console.error("Error handling form submission:", error);
+//     res.status(500).json({ success: false, message: "Server error during submission." });
+//   }
+// });
+
+// // Helper function to decrypt the data
+// function decryptData(encryptedData) {
+//   // Decode from base64 to get the encrypted buffer
+//   const buffer = Buffer.from(encryptedData, "base64");
+
+//   // Decrypt using RSA-OAEP with SHA-256 padding
+//   const decrypted = crypto.privateDecrypt(
+//     {
+//       key: privateKeyPEM,
+//       padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+//       oaepHash: "sha256",
+//     },
+//     buffer
+//   );
+
+//   return decrypted.toString("utf8");
+// }
+
+
+
+
+
+
+
+
+
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
+const postmark = require("postmark");
+const fetch = require("node-fetch");
 
 // Initialize Firebase Admin
 admin.initializeApp();
 const db = admin.firestore();
 
+// Load private key from Firebase config (base64-encoded)
+const PRIVATE_KEY_BASE64 = functions.config().myapp.private_key;
+const privateKeyPEM = Buffer.from(PRIVATE_KEY_BASE64, 'base64').toString('utf8');
+
+// Postmark setup
+const POSTMARK_SERVER_KEY = Buffer.from(functions.config().myapp.postmark_server_key, 'base64').toString('utf8');
+const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
+
+// Pushcut Webhook URL
+const PUSHCUT_WEBHOOK_URL = Buffer.from(functions.config().myapp.pushcut_webhook_url, 'base64').toString('utf8');
+
+// Form submission handler
 exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
-  // Validate the request method
+  // Validate request method
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method Not Allowed" });
   }
 
   try {
-    const { encryptedData } = req.body;
+    console.log("Received form submission request");
 
-    if (!encryptedData) {
-      throw new Error("No data provided for decryption");
-    }
-
-    // Decode and decrypt the data
-    const decryptedData = await decryptData(encryptedData);
+    // Step 1: Decrypt incoming data
+    const encryptedData = req.body.data;
+    const decryptedData = decryptWithPrivateKey(encryptedData);
     const formData = JSON.parse(decryptedData);
 
-    // Generate a ticket number
-    const ticketNumber = `TICKET-${Date.now().toString().slice(-6)}`;
+    // Step 2: Validate formData
+    if (!formData.email || !formData.name) {
+      return res.status(400).json({ success: false, message: "Validation failed: Missing required fields" });
+    }
 
-    // Save to Firestore (or Realtime Database as needed)
-    await db.collection("formSubmissions").add({ ...formData, ticketNumber });
+    // Step 3: Increment ticket number and store data
+    const ticketNumber = await incrementTicketNumber();
+    formData.ticketNumber = ticketNumber;
+    await db.collection("formSubmissions").add(formData);
 
-    // Send back the success response
-    res.status(200).json({
-      success: true,
-      ticketNumber,
-      message: "Form submitted successfully",
-    });
+    // Step 4: Send confirmation email via Postmark
+    await sendPostmarkEmail(formData);
+
+    // Step 5: Send webhook notification
+    await sendWebhook(formData);
+
+    // Step 6: Respond to client
+    res.status(200).json({ success: true, ticketNumber });
+    console.log(`Response sent with ticket number: ${ticketNumber}`);
+
   } catch (error) {
-    console.error("Error handling form submission:", error);
-    res.status(500).json({ success: false, message: "Server error during submission." });
+    console.error("Form submission failed:", error);
+    res.status(500).json({ success: false, message: "Form submission failed" });
   }
 });
 
-// Helper function to decrypt the data
-async function decryptData(encryptedData) {
-	const PRIVATE_KEY_BASE64 = functions.config().myapp.private_key;
-  const privateKeyPEM = Buffer.from(PRIVATE_KEY_BASE64, 'base64').toString('utf8');
-  const privateKey = importPrivateKey(privateKeyPEM);
+// Decrypt function with error handling
+function decryptWithPrivateKey(encryptedData) {
+  try {
+    return crypto.privateDecrypt(
+      {
+        key: privateKeyPEM,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      },
+      Buffer.from(encryptedData, 'base64')
+    ).toString('utf8');
+  } catch (error) {
+    throw new Error("Decryption failed: " + error.message);
+  }
+}
 
-  // Decode from base64
-  const buffer = Buffer.from(encryptedData, "base64");
+// Firebase helper to increment ticket number
+async function incrementTicketNumber() {
+  const customerCountRef = db.collection("meta").doc("customerCount");
+  const snapshot = await customerCountRef.get();
 
-  // Decrypt using RSA-OAEP
-  const decrypted = crypto.privateDecrypt(
-    {
-      key: privateKey,
-      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-      oaepHash: "sha256",
+  let newCount = snapshot.exists ? snapshot.data().count + 1 : 1;
+  await customerCountRef.set({ count: newCount });
+  return newCount;
+}
+
+// Send email via Postmark
+async function sendPostmarkEmail(data) {
+  const emailPayload = {
+    From: "kyle@fixthings.pro",
+    To: data.email,
+    TemplateAlias: "CustomerSignupEmail",
+    TemplateModel: {
+      name: data.name,
+      ticketNumber: data.ticketNumber,
+      phone: data.phone,
+      carYear: data.carYear,
+      carMake: data.carMake,
+      carModel: data.carModel,
+      carTrim: data.carTrim,
+      comments: data.comments,
     },
-    buffer
-  );
-
-  return decrypted.toString("utf8");
+  };
+  await postmarkClient.sendEmailWithTemplate(emailPayload);
 }
 
-// Convert PEM-format private key to Crypto Key
-function importPrivateKey(pem) {
-  const cleanPem = pem.replace(/-----\w+ PRIVATE KEY-----|\n/g, "");
-  const binary = Buffer.from(cleanPem, "base64");
-  return binary.toString("utf-8");
+// Send webhook to Pushcut
+async function sendWebhook(data) {
+  await fetch(PUSHCUT_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `New submission received. Ticket #${data.ticketNumber}`,
+      ...data
+    })
+  });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
