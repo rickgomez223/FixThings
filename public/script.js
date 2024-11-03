@@ -162,60 +162,55 @@ async function handleFormSubmit(event) {
   event.preventDefault();
   const form = event.target;
 
-  // Collect and validate form data
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const phone = document.getElementById("phone").value;
-  const carYear = document.getElementById("car-year").value;
-  const carMake = document.getElementById("car-make").value;
-  const carModel = document.getElementById("car-model").value;
-  const carTrim = document.getElementById("car-trim").value;
-  const comments = document.getElementById("comments").value;
-
-  if (!(name && email && carYear && carMake && carModel && carTrim)) {
-    alert("Please provide your name, email & the complete vehicle information.");
+  const data = collectFormData();
+  if (!validateData(data)) {
+    alert("Please provide your name, email & complete vehicle information.");
     return;
   }
 
-  // Prepare data object
-  const data = { name, email, phone, carYear, carMake, carModel, carTrim, comments };
-
   try {
-    // Step 1: Retrieve the public key
-    const pubKeyResponse = await fetch("/src/fixthings-webencrypt.pub");
-    if (!pubKeyResponse.ok) throw new Error("Public key not accessible");
-    const publicKeyPEM = await pubKeyResponse.text();
-    const publicKey = await importPublicKey(publicKeyPEM);
-
-    // Step 2: Encrypt the data
+    const publicKey = await fetchPublicKey("./src/fixthings-webencrypt.pub");
     const encryptedData = await encryptData(data, publicKey);
+    log("info", "Data encrypted successfully.", { encryptedData });
 
-    // Step 3: Send encrypted data to Firebase function
-    const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ encryptedData }),
-    });
-
-    // Handle the server response
-    const result = await response.json();
-    if (response.ok && result.success) {
-      alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
-      form.reset();
-    } else {
-      alert("Submission failed. Please try again later.");
-    }
+    const response = await submitData(encryptedData);
+    processResponse(response, form);
   } catch (error) {
     console.error("Error during form submission:", error);
     alert("There was an issue with submission. Please try again later.");
   }
 }
 
-// Helper functions as previously defined (importPublicKey, encryptData, pemToArrayBuffer)
+// Collect form data
+function collectFormData() {
+  log("info", "Collecting form data");
+  return {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    phone: document.getElementById("phone").value,
+    carYear: document.getElementById("car-year").value,
+    carMake: document.getElementById("car-make").value,
+    carModel: document.getElementById("car-model").value,
+    carTrim: document.getElementById("car-trim").value,
+    comments: document.getElementById("comments").value,
+  };
+}
 
-// Helper function to import the public key
+// Validate the collected data
+function validateData(data) {
+  log("info", "Validating data");
+  return data.name && data.email && data.carYear && data.carMake && data.carModel && data.carTrim;
+}
+
+async function fetchPublicKey(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Public key not accessible");
+  const publicKeyPEM = await response.text();
+  return await importPublicKey(publicKeyPEM);
+}
+
 async function importPublicKey(pemKey) {
-  const binaryDer = pemToArrayBuffer(pemKey); // Convert PEM to ArrayBuffer
+  const binaryDer = pemToArrayBuffer(pemKey);
   return await crypto.subtle.importKey(
     "spki",
     binaryDer,
@@ -225,19 +220,6 @@ async function importPublicKey(pemKey) {
   );
 }
 
-// Helper function to encrypt data using the public key
-async function encryptData(data, publicKey) {
-  const encoder = new TextEncoder();
-  const encodedData = encoder.encode(JSON.stringify(data));
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "RSA-OAEP" },
-    publicKey,
-    encodedData
-  );
-  return btoa(String.fromCharCode(...new Uint8Array(encrypted))); // Convert to Base64
-}
-
-// Convert PEM-format key to ArrayBuffer
 function pemToArrayBuffer(pem) {
   const base64 = pem
     .replace(/-----BEGIN PUBLIC KEY-----/g, "")
@@ -252,37 +234,59 @@ function pemToArrayBuffer(pem) {
   return bytes.buffer;
 }
 
-// Helper function to convert PEM to ArrayBuffer
-function str2ab(pem) {
-  const b64 = pem
-    .replace(/-----BEGIN PUBLIC KEY-----/, "")
-    .replace(/-----END PUBLIC KEY-----/, "")
-    .replace(/\s+/g, "");
-  const raw = atob(b64);
-  const buffer = new ArrayBuffer(raw.length);
-  const view = new Uint8Array(buffer);
-  for (let i = 0; i < raw.length; i++) {
-    view[i] = raw.charCodeAt(i);
-  }
-  return buffer;
+// Encrypt data using the public key
+async function encryptData(data, publicKey) {
+  log("info", "Encrypting data");
+  const encoder = new TextEncoder();
+  const encodedData = encoder.encode(JSON.stringify(data));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    publicKey,
+    encodedData
+  );
+  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
 }
 
-// Logging function
+// Submit the encrypted data to the server
+async function submitData(encryptedData) {
+  log("info", "Submitting data to server", { encryptedData });
+  const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ encryptedData }),
+  });
 
+  if (!response.ok) {
+    throw new Error(`Server returned status: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// Process the server response
+function processResponse(result, form) {
+  log("info", "Processing server response", { result });
+  if (result.success) {
+    alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
+    form.reset();
+  } else {
+    alert("Submission failed. Please try again later.");
+  }
+}
+
+
+
+// Logging function
 function log(type, message, data = {}) {
   const allowedTypes = ["log", "warn", "error", "info"];
-
-  // Format the log entry with a timestamp and message
   const logEntry = `[${new Date().toISOString()}] ${message}`;
 
-  // Check if the log type is valid
   if (allowedTypes.includes(type)) {
-    console[type](logEntry, data); // Log the message along with additional data if provided
+    console[type](logEntry, data);
   } else {
     console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
   }
 }
-
 // Debugging function with button creation at the bottom of the script
 (function () {
   // Function to auto-fill and submit the form with sample data
