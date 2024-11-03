@@ -178,36 +178,28 @@ async function handleFormSubmit(event) {
   }
 
   // Prepare data object
-  const data = {
-    name,
-    email,
-    phone,
-    carYear,
-    carMake,
-    carModel,
-    carTrim,
-    comments,
-  };
+  const data = { name, email, phone, carYear, carMake, carModel, carTrim, comments };
 
   try {
     // Step 1: Retrieve the public key
-    const pubKeyResponse = await fetch("./src/fixthings-webencrypt.pub");
+    const pubKeyResponse = await fetch("/src/fixthings-webencrypt.pub");
+    if (!pubKeyResponse.ok) throw new Error("Public key not accessible");
     const publicKeyPEM = await pubKeyResponse.text();
     const publicKey = await importPublicKey(publicKeyPEM);
 
     // Step 2: Encrypt the data
     const encryptedData = await encryptData(data, publicKey);
 
-    // Step 3: Send encrypted data to server
-    const response = await fetch("/api/formSubmit", {
+    // Step 3: Send encrypted data to Firebase function
+    const response = await fetch("https://<your-firebase-project>.cloudfunctions.net/formSubmitHandler", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ encryptedData }),
     });
 
+    // Handle the server response
     const result = await response.json();
-
-    if (response.ok) {
+    if (response.ok && result.success) {
       alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
       form.reset();
     } else {
@@ -219,9 +211,11 @@ async function handleFormSubmit(event) {
   }
 }
 
+// Helper functions as previously defined (importPublicKey, encryptData, pemToArrayBuffer)
+
 // Helper function to import the public key
 async function importPublicKey(pemKey) {
-  const binaryDer = str2ab(pemKey); // Convert PEM to ArrayBuffer
+  const binaryDer = pemToArrayBuffer(pemKey); // Convert PEM to ArrayBuffer
   return await crypto.subtle.importKey(
     "spki",
     binaryDer,
@@ -241,6 +235,21 @@ async function encryptData(data, publicKey) {
     encodedData
   );
   return btoa(String.fromCharCode(...new Uint8Array(encrypted))); // Convert to Base64
+}
+
+// Convert PEM-format key to ArrayBuffer
+function pemToArrayBuffer(pem) {
+  const base64 = pem
+    .replace(/-----BEGIN PUBLIC KEY-----/g, "")
+    .replace(/-----END PUBLIC KEY-----/g, "")
+    .replace(/\s/g, "");
+  const binaryString = atob(base64);
+  const binaryLen = binaryString.length;
+  const bytes = new Uint8Array(binaryLen);
+  for (let i = 0; i < binaryLen; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
 }
 
 // Helper function to convert PEM to ArrayBuffer
