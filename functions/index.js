@@ -12,33 +12,16 @@ const fetch = require("node-fetch");          // For making HTTP requests to the
 const app = express();
 app.use(bodyParser.json());  // Automatically parse JSON request bodies
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-
-
-// Get Firebase configuration from environment variables
-const firebaseConfig = {
-  apiKey: functions.config().myapp.api_key,
-  authDomain: functions.config().myapp.auth_domain,
-  databaseURL: functions.config().myapp.database_url,
-  projectId: functions.config().myapp.project_id,
-  storageBucket: functions.config().myapp.storage_bucket,
-  messagingSenderId: functions.config().myapp.messaging_sender_id,
-  appId: functions.config().myapp.app_id,
-  measurementId: functions.config().myapp.measurement_id,
-  credential: firebase.credential.applicationDefault()
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
+// Initialize Firebase Admin SDK
+firebase.initializeApp({
+    credential: firebase.credential.applicationDefault(), // Using default credentials
+    databaseURL: functions.config().myapp.database_url    // Set your database URL
+});
 
 const db = firebase.database();  // Firebase database instance
 
-// Load private key for decryption
-const PRIVATE_KEY_PATH = functions.config().myapp.private_key; // Get your RSA private key from Firebase config
+// Load private key for decryption from Firebase config
+const PRIVATE_KEY_PATH = functions.config().myapp.private_key; // Get your RSA private key path from Firebase config
 const privateKey = fs.readFileSync(PRIVATE_KEY_PATH, "utf8");  // Reading the RSA private key file
 
 // Postmark configuration
