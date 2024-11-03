@@ -1,0 +1,265 @@
+[debug] [2024-11-03T06:02:09.147Z] ----------------------------------------------------------------------
+[debug] [2024-11-03T06:02:09.150Z] Command:       /home/rickgomez223/.nvm/versions/node/v23.1.0/bin/node /usr/bin/firebase deploy
+[debug] [2024-11-03T06:02:09.151Z] CLI Version:   13.23.1
+[debug] [2024-11-03T06:02:09.151Z] Platform:      linux
+[debug] [2024-11-03T06:02:09.151Z] Node Version:  v23.1.0
+[debug] [2024-11-03T06:02:09.151Z] Time:          Sun Nov 03 2024 06:02:09 GMT+0000 (Coordinated Universal Time)
+[debug] [2024-11-03T06:02:09.151Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-11-03T06:02:09.247Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-11-03T06:02:09.248Z] > authorizing via signed-in user (rickgomez223@gmail.com)
+[debug] [2024-11-03T06:02:09.248Z] [iam] checking project fixthings-db8b0 for permissions ["cloudconfig.configs.get","cloudconfig.configs.update","cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2024-11-03T06:02:09.249Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.250Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.251Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/fixthings-db8b0:testIamPermissions [none]
+[debug] [2024-11-03T06:02:09.251Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/fixthings-db8b0:testIamPermissions x-goog-quota-user=projects/fixthings-db8b0
+[debug] [2024-11-03T06:02:09.251Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/fixthings-db8b0:testIamPermissions {"permissions":["cloudconfig.configs.get","cloudconfig.configs.update","cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2024-11-03T06:02:09.392Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/fixthings-db8b0:testIamPermissions 200
+[debug] [2024-11-03T06:02:09.392Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/fixthings-db8b0:testIamPermissions {"permissions":["cloudconfig.configs.get","cloudconfig.configs.update","cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2024-11-03T06:02:09.393Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.393Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.393Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/fixthings-db8b0/serviceAccounts/fixthings-db8b0@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-11-03T06:02:09.393Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/fixthings-db8b0/serviceAccounts/fixthings-db8b0@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-11-03T06:02:09.485Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/fixthings-db8b0/serviceAccounts/fixthings-db8b0@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-11-03T06:02:09.486Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/fixthings-db8b0/serviceAccounts/fixthings-db8b0@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-11-03T06:02:09.486Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.486Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.487Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 [none]
+[debug] [2024-11-03T06:02:09.574Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 200
+[debug] [2024-11-03T06:02:09.575Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 {"projectId":"fixthings-db8b0","projectNumber":"829720853067","displayName":"FixThings","name":"projects/fixthings-db8b0","resources":{"hostingSite":"fixthings-db8b0","realtimeDatabaseInstance":"fixthings-db8b0-default-rtdb","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_b490319b-4833-4f91-b66a-904d35d67659"}
+[debug] [2024-11-03T06:02:09.575Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.575Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.575Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 [none]
+[debug] [2024-11-03T06:02:09.621Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 200
+[debug] [2024-11-03T06:02:09.621Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 {"projectId":"fixthings-db8b0","projectNumber":"829720853067","displayName":"FixThings","name":"projects/fixthings-db8b0","resources":{"hostingSite":"fixthings-db8b0","realtimeDatabaseInstance":"fixthings-db8b0-default-rtdb","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_b490319b-4833-4f91-b66a-904d35d67659"}
+[info] 
+[info] === Deploying to 'fixthings-db8b0'...
+[info] 
+[info] i  deploying database, storage, firestore, functions, hosting, remoteconfig 
+[info] i  database: checking rules syntax... 
+[debug] [2024-11-03T06:02:09.626Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.626Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.627Z] >>> [apiv2][query] GET https://firebasedatabase.googleapis.com/v1beta/projects/fixthings-db8b0/locations/-/instances/fixthings-db8b0-default-rtdb [none]
+[debug] [2024-11-03T06:02:09.715Z] <<< [apiv2][status] GET https://firebasedatabase.googleapis.com/v1beta/projects/fixthings-db8b0/locations/-/instances/fixthings-db8b0-default-rtdb 200
+[debug] [2024-11-03T06:02:09.715Z] <<< [apiv2][body] GET https://firebasedatabase.googleapis.com/v1beta/projects/fixthings-db8b0/locations/-/instances/fixthings-db8b0-default-rtdb {"name":"projects/829720853067/locations/us-central1/instances/fixthings-db8b0-default-rtdb","project":"projects/829720853067","databaseUrl":"https://fixthings-db8b0-default-rtdb.firebaseio.com","type":"DEFAULT_DATABASE","state":"ACTIVE"}
+[debug] [2024-11-03T06:02:09.716Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.716Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.716Z] >>> [apiv2][query] PUT https://fixthings-db8b0-default-rtdb.firebaseio.com/.settings/rules.json dryRun=true
+[debug] [2024-11-03T06:02:09.716Z] >>> [apiv2][body] PUT https://fixthings-db8b0-default-rtdb.firebaseio.com/.settings/rules.json "{\n  \"rules\": {\n    \".read\": \"true\",\n    \".write\": \"true\"\n  }\n}\n"
+[debug] [2024-11-03T06:02:09.879Z] <<< [apiv2][status] PUT https://fixthings-db8b0-default-rtdb.firebaseio.com/.settings/rules.json 200
+[debug] [2024-11-03T06:02:09.879Z] <<< [apiv2][body] PUT https://fixthings-db8b0-default-rtdb.firebaseio.com/.settings/rules.json {"status":"ok"}
+[info] ✔  database: rules syntax for database fixthings-db8b0-default-rtdb is valid 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2024-11-03T06:02:09.881Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.881Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:09.881Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/firebasestorage.googleapis.com [none]
+[debug] [2024-11-03T06:02:09.882Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/firebasestorage.googleapis.com x-goog-quota-user=projects/fixthings-db8b0
+[debug] [2024-11-03T06:02:10.032Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/firebasestorage.googleapis.com 200
+[debug] [2024-11-03T06:02:10.032Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/firebasestorage.googleapis.com [omitted]
+[info] ✔  storage: required API firebasestorage.googleapis.com is enabled 
+[debug] [2024-11-03T06:02:10.033Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.033Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.033Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/fixthings-db8b0/defaultBucket [none]
+[debug] [2024-11-03T06:02:10.208Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/fixthings-db8b0/defaultBucket 200
+[debug] [2024-11-03T06:02:10.209Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/fixthings-db8b0/defaultBucket {"name":"projects/fixthings-db8b0/defaultBucket","location":"US","bucket":{"name":"projects/fixthings-db8b0/buckets/fixthings-db8b0.appspot.com"}}
+[info] i  firebase.storage: checking storage.rules for compilation errors... 
+[debug] [2024-11-03T06:02:10.210Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.210Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.210Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test [none]
+[debug] [2024-11-03T06:02:10.211Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test [omitted]
+[debug] [2024-11-03T06:02:10.274Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test 200
+[debug] [2024-11-03T06:02:10.274Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test {}
+[info] ✔  firebase.storage: rules file storage.rules compiled successfully 
+[info] i  firestore: reading indexes from firestore.indexes.json... 
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2024-11-03T06:02:10.277Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.277Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.277Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test [none]
+[debug] [2024-11-03T06:02:10.277Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test [omitted]
+[debug] [2024-11-03T06:02:10.297Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test 200
+[debug] [2024-11-03T06:02:10.298Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/fixthings-db8b0:test {}
+[info] ✔  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2024-11-03T06:02:10.299Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.299Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.299Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 [none]
+[debug] [2024-11-03T06:02:10.377Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 200
+[debug] [2024-11-03T06:02:10.378Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0 {"projectId":"fixthings-db8b0","projectNumber":"829720853067","displayName":"FixThings","name":"projects/fixthings-db8b0","resources":{"hostingSite":"fixthings-db8b0","realtimeDatabaseInstance":"fixthings-db8b0-default-rtdb","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_b490319b-4833-4f91-b66a-904d35d67659"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[debug] [2024-11-03T06:02:10.379Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.379Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.379Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.379Z] Checked if tokens are valid: true, expires at: 1730615154281
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2024-11-03T06:02:10.380Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.380Z] Checked if tokens are valid: true, expires at: 1730615154281
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-11-03T06:02:10.380Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.380Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.380Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-11-03T06:02:10.380Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/fixthings-db8b0
+[debug] [2024-11-03T06:02:10.381Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-11-03T06:02:10.381Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/fixthings-db8b0
+[debug] [2024-11-03T06:02:10.383Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudbuild.googleapis.com [none]
+[debug] [2024-11-03T06:02:10.383Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudbuild.googleapis.com x-goog-quota-user=projects/fixthings-db8b0
+[debug] [2024-11-03T06:02:10.385Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/artifactregistry.googleapis.com [none]
+[debug] [2024-11-03T06:02:10.385Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/artifactregistry.googleapis.com x-goog-quota-user=projects/fixthings-db8b0
+[debug] [2024-11-03T06:02:10.489Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/runtimeconfig.googleapis.com 200
+[debug] [2024-11-03T06:02:10.489Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2024-11-03T06:02:10.497Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/artifactregistry.googleapis.com 200
+[debug] [2024-11-03T06:02:10.497Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/artifactregistry.googleapis.com [omitted]
+[info] ✔  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2024-11-03T06:02:10.499Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudbuild.googleapis.com 200
+[debug] [2024-11-03T06:02:10.499Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudbuild.googleapis.com [omitted]
+[info] ✔  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2024-11-03T06:02:10.505Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudfunctions.googleapis.com 200
+[debug] [2024-11-03T06:02:10.505Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/fixthings-db8b0/services/cloudfunctions.googleapis.com [omitted]
+[info] ✔  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2024-11-03T06:02:10.506Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.506Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.506Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0/adminSdkConfig [none]
+[debug] [2024-11-03T06:02:10.766Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0/adminSdkConfig 200
+[debug] [2024-11-03T06:02:10.766Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/fixthings-db8b0/adminSdkConfig {"projectId":"fixthings-db8b0","databaseURL":"https://fixthings-db8b0-default-rtdb.firebaseio.com","storageBucket":"fixthings-db8b0.appspot.com","locationId":"us-central"}
+[debug] [2024-11-03T06:02:10.767Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.767Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.767Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs [none]
+[debug] [2024-11-03T06:02:10.842Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs 200
+[debug] [2024-11-03T06:02:10.842Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs {"configs":[{"name":"projects/fixthings-db8b0/configs/myapp"}]}
+[debug] [2024-11-03T06:02:10.843Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.843Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.843Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables [none]
+[debug] [2024-11-03T06:02:10.912Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables 200
+[debug] [2024-11-03T06:02:10.912Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables {"variables":[{"name":"projects/fixthings-db8b0/configs/myapp/variables/api_key","updateTime":"2024-11-03T05:52:10.385604184Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/postmark_server_key","updateTime":"2024-11-02T15:32:57.327157925Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/app_id","updateTime":"2024-11-03T05:52:10.401035591Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/fipp/pushcut_webhook_url","updateTime":"2024-11-03T05:30:56.617840888Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/private_key","updateTime":"2024-11-03T05:21:58.282075113Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/measurement_id","updateTime":"2024-11-03T05:52:10.371036585Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/firebase_db_url","updateTime":"2024-11-03T05:26:32.057386840Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/auth_domain","updateTime":"2024-11-03T05:52:10.385632629Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/pushcut_webhook_url","updateTime":"2024-11-03T05:32:05.834026565Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/database_url","updateTime":"2024-11-03T05:52:10.400239084Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/project_id","updateTime":"2024-11-03T05:52:10.400685603Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/storage_bucket","updateTime":"2024-11-03T05:52:10.385351651Z"},{"name":"projects/fixthings-db8b0/configs/myapp/variables/messaging_sender_id","updateTime":"2024-11-03T05:52:10.400970942Z"}]}
+[debug] [2024-11-03T06:02:10.913Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.913Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.913Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.913Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.913Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.914Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] Checked if tokens are valid: true, expires at: 1730615154281
+[debug] [2024-11-03T06:02:10.915Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/api_key [none]
+[debug] [2024-11-03T06:02:10.916Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/postmark_server_key [none]
+[debug] [2024-11-03T06:02:10.917Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/app_id [none]
+[debug] [2024-11-03T06:02:10.919Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/fipp/pushcut_webhook_url [none]
+[debug] [2024-11-03T06:02:10.920Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/private_key [none]
+[debug] [2024-11-03T06:02:10.922Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/measurement_id [none]
+[debug] [2024-11-03T06:02:10.923Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/firebase_db_url [none]
+[debug] [2024-11-03T06:02:10.925Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/auth_domain [none]
+[debug] [2024-11-03T06:02:10.926Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/pushcut_webhook_url [none]
+[debug] [2024-11-03T06:02:10.927Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/database_url [none]
+[debug] [2024-11-03T06:02:10.929Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/project_id [none]
+[debug] [2024-11-03T06:02:10.930Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/storage_bucket [none]
+[debug] [2024-11-03T06:02:10.931Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/messaging_sender_id [none]
+[debug] [2024-11-03T06:02:11.001Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/postmark_server_key 200
+[debug] [2024-11-03T06:02:11.001Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/postmark_server_key {"name":"projects/fixthings-db8b0/configs/myapp/variables/postmark_server_key","updateTime":"2024-11-02T15:32:57.327157925Z","text":"7456c6b5-9905-4911-9eba-3db1a9f2b4b1"}
+[debug] [2024-11-03T06:02:11.005Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/measurement_id 200
+[debug] [2024-11-03T06:02:11.005Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/measurement_id {"name":"projects/fixthings-db8b0/configs/myapp/variables/measurement_id","updateTime":"2024-11-03T05:52:10.371036585Z","text":"G-CBE8M6V0TL"}
+[debug] [2024-11-03T06:02:11.007Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/api_key 200
+[debug] [2024-11-03T06:02:11.007Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/api_key {"name":"projects/fixthings-db8b0/configs/myapp/variables/api_key","updateTime":"2024-11-03T05:52:10.385604184Z","text":"AIzaSyCVmGmDDjl5GJl3x5RmJMynb4MCXKQLVQg"}
+[debug] [2024-11-03T06:02:11.008Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/pushcut_webhook_url 200
+[debug] [2024-11-03T06:02:11.008Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/pushcut_webhook_url {"name":"projects/fixthings-db8b0/configs/myapp/variables/pushcut_webhook_url","updateTime":"2024-11-03T05:32:05.834026565Z","text":"aHR0cHM6Ly9hcGkucHVzaGN1dC5pby9WRVFrdHZDVEZucGNoS1RUM1RzSUsvbm90aWZpY2F0aW9ucy9GaXhUaGluZ3M="}
+[debug] [2024-11-03T06:02:11.028Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/fipp/pushcut_webhook_url 200
+[debug] [2024-11-03T06:02:11.028Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/fipp/pushcut_webhook_url {"name":"projects/fixthings-db8b0/configs/myapp/variables/fipp/pushcut_webhook_url","updateTime":"2024-11-03T05:30:56.617840888Z","text":"aHR0cHM6Ly9hcGkucHVzaGN1dC5pby9WRVFrdHZDVEZucGNoS1RUM1RzSUsvbm90aWZpY2F0aW9ucy9GaXhUaGluZ3M="}
+[debug] [2024-11-03T06:02:11.029Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/messaging_sender_id 200
+[debug] [2024-11-03T06:02:11.029Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/messaging_sender_id {"name":"projects/fixthings-db8b0/configs/myapp/variables/messaging_sender_id","updateTime":"2024-11-03T05:52:10.400970942Z","text":"829720853067"}
+[debug] [2024-11-03T06:02:11.054Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/auth_domain 200
+[debug] [2024-11-03T06:02:11.054Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/auth_domain {"name":"projects/fixthings-db8b0/configs/myapp/variables/auth_domain","updateTime":"2024-11-03T05:52:10.385632629Z","text":"fixthings-db8b0.firebaseapp.com"}
+[debug] [2024-11-03T06:02:11.055Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/private_key 200
+[debug] [2024-11-03T06:02:11.055Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/private_key {"name":"projects/fixthings-db8b0/configs/myapp/variables/private_key","updateTime":"2024-11-03T05:21:58.282075113Z","text":"-----BEGIN RSA PRIVATE KEY-----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-----END RSA PRIVATE KEY-----"}
+[debug] [2024-11-03T06:02:11.065Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/app_id 200
+[debug] [2024-11-03T06:02:11.065Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/app_id {"name":"projects/fixthings-db8b0/configs/myapp/variables/app_id","updateTime":"2024-11-03T05:52:10.401035591Z","text":"1:829720853067:web:a85ebf7b499e108f382bce"}
+[debug] [2024-11-03T06:02:11.066Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/project_id 200
+[debug] [2024-11-03T06:02:11.066Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/project_id {"name":"projects/fixthings-db8b0/configs/myapp/variables/project_id","updateTime":"2024-11-03T05:52:10.400685603Z","text":"fixthings-db8b0"}
+[debug] [2024-11-03T06:02:11.067Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/storage_bucket 200
+[debug] [2024-11-03T06:02:11.067Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/storage_bucket {"name":"projects/fixthings-db8b0/configs/myapp/variables/storage_bucket","updateTime":"2024-11-03T05:52:10.385351651Z","text":"fixthings-db8b0.appspot.com"}
+[debug] [2024-11-03T06:02:11.067Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/firebase_db_url 200
+[debug] [2024-11-03T06:02:11.068Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/firebase_db_url {"name":"projects/fixthings-db8b0/configs/myapp/variables/firebase_db_url","updateTime":"2024-11-03T05:26:32.057386840Z","text":"aHR0cHM6Ly9maXh0aGluZ3MtZGI4YjAtZGVmYXVsdC1ydGRiLmZpcmViYXNlaW8uY29t"}
+[debug] [2024-11-03T06:02:11.068Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/database_url 200
+[debug] [2024-11-03T06:02:11.068Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/fixthings-db8b0/configs/myapp/variables/database_url {"name":"projects/fixthings-db8b0/configs/myapp/variables/database_url","updateTime":"2024-11-03T05:52:10.400239084Z","text":"https://fixthings-db8b0-default-rtdb.firebaseio.com"}
+[debug] [2024-11-03T06:02:11.070Z] Validating nodejs source
+[debug] [2024-11-03T06:02:11.747Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "crypto-js": "^4.2.0",
+    "express": "^4.21.1",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.0.1",
+    "node-fetch": "^3.3.2",
+    "postmark": "^4.0.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2024-11-03T06:02:11.748Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2024-11-03T06:02:11.750Z] Could not find functions.yaml. Must use http discovery
+[debug] [2024-11-03T06:02:11.755Z] Found firebase-functions binary at '/home/rickgomez223/FixThings/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8854
+
+[error] Failed to load private key from -----BEGIN RSA PRIVATE KEY-----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-----END RSA PRIVATE KEY-----: Error: ENOENT: no such file or directory, open '-----BEGIN RSA PRIVATE KEY-----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-----END RSA PRIVATE KEY-----'
+    at Object.readFileSync (node:fs:448:20)
+    at Object.<anonymous> (/home/rickgomez223/FixThings/functions/index.js:29:21)
+    at Module._compile (node:internal/modules/cjs/loader:1572:14)
+    at Object..js (node:internal/modules/cjs/loader:1709:10)
+    at Module.load (node:internal/modules/cjs/loader:1315:32)
+    at Function._load (node:internal/modules/cjs/loader:1125:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:216:24)
+    at Module.require (node:internal/modules/cjs/loader:1337:12)
+    at require (node:internal/modules/helpers:139:16) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '-----BEGIN RSA PRIVATE KEY-----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-----END RSA PRIVATE KEY-----'
+}
+
+[debug] [2024-11-03T06:02:12.366Z] Failed to call quitquitquit. This often means the server failed to start request to http://localhost:8854/__/quitquitquit failed, reason: connect ECONNREFUSED 127.0.0.1:8854 {"message":"request to http://localhost:8854/__/quitquitquit failed, reason: connect ECONNREFUSED 127.0.0.1:8854","type":"system","errno":"ECONNREFUSED","code":"ECONNREFUSED"}
+[debug] [2024-11-03T06:02:12.388Z] FetchError: request to http://127.0.0.1:8854/__/functions.yaml failed, reason: socket hang up
+    at ClientRequest.<anonymous> (/usr/lib/node_modules/firebase-tools/node_modules/node-fetch/lib/index.js:1501:11)
+    at ClientRequest.emit (node:events:507:28)
+    at ClientRequest.emit (node:domain:489:12)
+    at emitErrorEvent (node:_http_client:103:11)
+    at Socket.socketOnEnd (node:_http_client:530:5)
+    at Socket.emit (node:events:519:35)
+    at Socket.emit (node:domain:489:12)
+    at endReadableNT (node:internal/streams/readable:1696:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[error] 
+[error] Error: An unexpected error has occurred.
