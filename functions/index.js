@@ -12,11 +12,29 @@ const fetch = require("node-fetch");          // For making HTTP requests to the
 const app = express();
 app.use(bodyParser.json());  // Automatically parse JSON request bodies
 
-// Firebase setup
-firebase.initializeApp({
-    credential: firebase.credential.applicationDefault(),
-    databaseURL: functions.config().myapp.firebase_db_url // Use the config directly here
-});
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import functions from 'firebase-functions';
+
+// Get Firebase configuration from environment variables
+const firebaseConfig = {
+  apiKey: functions.config().myapp.api_key,
+  authDomain: functions.config().myapp.auth_domain,
+  databaseURL: functions.config().myapp.database_url,
+  projectId: functions.config().myapp.project_id,
+  storageBucket: functions.config().myapp.storage_bucket,
+  messagingSenderId: functions.config().myapp.messaging_sender_id,
+  appId: functions.config().myapp.app_id,
+  measurementId: functions.config().myapp.measurement_id,
+  credential: firebase.credential.applicationDefault()
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
 const db = firebase.database();  // Firebase database instance
 
 // Load private key for decryption
