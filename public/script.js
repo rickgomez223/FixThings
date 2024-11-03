@@ -191,7 +191,7 @@ async function handleFormSubmit(event) {
     const encryptedData = await encryptData(data, publicKey);
 
     // Step 3: Send encrypted data to Firebase function
-    const response = await fetch("https://<your-firebase-project>.cloudfunctions.net/formSubmitHandler", {
+    const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ encryptedData }),
