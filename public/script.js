@@ -173,11 +173,58 @@ async function handleFormSubmit(event) {
     const encryptedData = await encryptData(data, publicKey);
     log("info", "Data encrypted successfully.", { encryptedData });
 
+    console.log("Message sent. Waiting for server response...");
     const response = await submitData(encryptedData);
+    console.log("Server response received. Processing response...");
+
     processResponse(response, form);
   } catch (error) {
-    console.error("Error during form submission:", error);
+    console.error("Error during form submission:", error.message || error);
     alert("There was an issue with submission. Please try again later.");
+  }
+}
+
+// Submit the encrypted data to the server
+async function submitData(encryptedData) {
+  log("info", "Submitting data to server", { encryptedData });
+  
+  try {
+    const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ encryptedData }),
+    });
+
+    // Log all HTTP responses, even if they are not OK
+    console.log(`HTTP Status: ${response.status} ${response.statusText}`);
+
+    // Attempt to parse the JSON response
+    const result = await response.json();
+    console.log("Response JSON:", result);
+
+    if (!response.ok) {
+      console.error(`Unexpected server response: ${response.status}`, result);
+      throw new Error(`Server returned error status: ${response.status}`);
+    }
+
+    return result;
+  } catch (error) {
+    // Handle and log non-JSON responses or other errors
+    console.error("Error parsing response or network issue:", error.message || error);
+    throw new Error("There was a network issue or unexpected response from the server.");
+  }
+}
+
+// Process the server response
+function processResponse(result, form) {
+  log("info", "Processing server response", { result });
+  if (result.success) {
+    console.log("Response processed: Submission success.");
+    alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
+    form.reset();
+  } else {
+    console.error("Response processed: Submission failed.");
+    alert("Submission failed. Please try again later.");
   }
 }
 
@@ -247,32 +294,7 @@ async function encryptData(data, publicKey) {
   return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
 }
 
-// Submit the encrypted data to the server
-async function submitData(encryptedData) {
-  log("info", "Submitting data to server", { encryptedData });
-  const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ encryptedData }),
-  });
 
-  if (!response.ok) {
-    throw new Error(`Server returned status: ${response.status}`);
-  }
-
-  return await response.json();
-}
-
-// Process the server response
-function processResponse(result, form) {
-  log("info", "Processing server response", { result });
-  if (result.success) {
-    alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
-    form.reset();
-  } else {
-    alert("Submission failed. Please try again later.");
-  }
-}
 
 
 
