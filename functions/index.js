@@ -5,7 +5,7 @@ const postmark = require("postmark");
 
 // Initialize the Firebase Admin SDK
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(), // Ensure your environment has access to your service account key
+  credential: admin.credential.applicationDefault(),
   databaseURL: "https://fixthings-db8b0-default-rtdb.firebaseio.com/" // Replace with your database URL
 });
 
@@ -22,9 +22,10 @@ async function getApiKeys() {
       throw new Error("No API keys found in Firebase.");
     }
 
-    const PRIVATE_KEY = Buffer.from(apiKeys.PRIVATE_KEY, 'base64').toString('utf-8');
-    const POSTMARK_SERVER_KEY = Buffer.from(apiKeys.POSTMARK_SERVER_KEY, 'base64').toString('utf-8');
-    const PUSHCUT_WEBHOOK_URL = Buffer.from(apiKeys.PUSHCUT_WEBHOOK_URL, 'base64').toString('utf-8');
+    // Directly assign the keys without decoding
+    const PRIVATE_KEY = apiKeys.PRIVATE_KEY;
+    const POSTMARK_SERVER_KEY = apiKeys.POSTMARK_SERVER_KEY;
+    const PUSHCUT_WEBHOOK_URL = apiKeys.PUSHCUT_WEBHOOK_URL;
 
     return { PRIVATE_KEY, POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL };
   } catch (error) {
@@ -53,8 +54,11 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
     const { PRIVATE_KEY, POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL } = await getApiKeys();
     console.log("Fetched API Keys:", { POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL });
 
+    // Ensure the private key is in PEM format
+    const formattedPrivateKey = `-----BEGIN RSA PRIVATE KEY-----\n${PRIVATE_KEY}\n-----END RSA PRIVATE KEY-----`;
+
     // Decrypt the incoming data
-    const decryptedData = decryptWithPrivateKey(encryptedData, PRIVATE_KEY);
+    const decryptedData = decryptWithPrivateKey(encryptedData, formattedPrivateKey);
     const formData = JSON.parse(decryptedData);
     console.log("Decrypted form data:", formData);
 
