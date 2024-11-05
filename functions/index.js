@@ -3,20 +3,37 @@ const admin = require("firebase-admin");
 const crypto = require("crypto");
 const postmark = require("postmark");
 
-admin.initializeApp();
+// Initialize the Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(), // Ensure your environment has access to your service account key
+  databaseURL: "https://fixthings-db8b0-default-rtdb.firebaseio.com/" // Replace with your database URL
+});
+
+// Initialize Firestore
 const db = admin.firestore();
 
-const PRIVATE_KEY = Buffer.from(process.env.PRIVATE_KEY, 'base64').toString('utf-8'); // Decode if necessary
-const POSTMARK_SERVER_KEY = Buffer.from(process.env.POSTMARK_SERVER_KEY, 'base64').toString('utf-8'); // 
-const PUSHCUT_WEBHOOK_URL = Buffer.from(process.env.PUSHCUT_WEBHOOK_URL, 'base64').toString('utf-8'); // 
+// Function to fetch API keys from Firebase
+async function getApiKeys() {
+  try {
+    const snapshot = await admin.database().ref('apikeys').once('value');
+    const apiKeys = snapshot.val();
 
-if (!PRIVATE_KEY || !POSTMARK_SERVER_KEY || !PUSHCUT_WEBHOOK_URL) {
-  console.error("Missing necessary configuration in environment variables.");
-  throw new Error("Missing necessary environment configuration.");
+    if (!apiKeys) {
+      throw new Error("No API keys found in Firebase.");
+    }
+
+    const PRIVATE_KEY = Buffer.from(apiKeys.PRIVATE_KEY, 'base64').toString('utf-8');
+    const POSTMARK_SERVER_KEY = Buffer.from(apiKeys.POSTMARK_SERVER_KEY, 'base64').toString('utf-8');
+    const PUSHCUT_WEBHOOK_URL = Buffer.from(apiKeys.PUSHCUT_WEBHOOK_URL, 'base64').toString('utf-8');
+
+    return { PRIVATE_KEY, POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL };
+  } catch (error) {
+    console.error("Error fetching API keys from Firebase:", error);
+    throw new Error("Failed to fetch API keys from Firebase.");
+  }
 }
 
-const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
-
+// Cloud Function to handle form submissions
 exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method Not Allowed" });
@@ -31,7 +48,10 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
       return res.status(400).json({ success: false, message: "No data provided" });
     }
 
-    const decryptedData = decryptWithPrivateKey(encryptedData);
+    // Fetch API keys
+    const { PRIVATE_KEY, POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL } = await getApiKeys();
+    
+    const decryptedData = decryptWithPrivateKey(encryptedData, PRIVATE_KEY);
     const formData = JSON.parse(decryptedData);
 
     if (!formData.email || !formData.name) {
@@ -43,8 +63,10 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
     formData.ticketNumber = ticketNumber;
     await db.collection("formSubmissions").add(formData);
 
-    await sendPostmarkEmail(formData);
-    await sendWebhook(formData);
+    // Initialize Postmark client with the fetched key
+    const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
+    await sendPostmarkEmail(postmarkClient, formData);
+    await sendWebhook(PUSHCUT_WEBHOOK_URL, formData);
 
     res.status(200).json({ success: true, ticketNumber });
     console.log(`Response sent with ticket number: ${ticketNumber}`);
@@ -55,11 +77,12 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
   }
 });
 
-function decryptWithPrivateKey(encryptedData) {
+// Function to decrypt data with the private key
+function decryptWithPrivateKey(encryptedData, privateKey) {
   try {
     return crypto.privateDecrypt(
       {
-        key: PRIVATE_KEY,
+        key: privateKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
       },
       Buffer.from(encryptedData, 'base64')
@@ -70,6 +93,7 @@ function decryptWithPrivateKey(encryptedData) {
   }
 }
 
+// Function to increment ticket number
 async function incrementTicketNumber() {
   const customerCountRef = db.collection("meta").doc("customerCount");
   const snapshot = await customerCountRef.get();
@@ -79,7 +103,8 @@ async function incrementTicketNumber() {
   return newCount;
 }
 
-async function sendPostmarkEmail(data) {
+// Function to send email using Postmark
+async function sendPostmarkEmail(postmarkClient, data) {
   const emailPayload = {
     From: "kyle@fixthings.pro",
     To: data.email,
@@ -105,10 +130,11 @@ async function sendPostmarkEmail(data) {
   }
 }
 
-async function sendWebhook(data) {
+// Function to send webhook notification
+async function sendWebhook(webhookUrl, data) {
   try {
     const fetch = await import('node-fetch').then(module => module.default);
-    const response = await fetch(PUSHCUT_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
