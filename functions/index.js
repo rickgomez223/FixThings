@@ -3,24 +3,20 @@ const admin = require("firebase-admin");
 const crypto = require("crypto");
 const postmark = require("postmark");
 
-// Initialize Firebase Admin
 admin.initializeApp();
 const db = admin.firestore();
 
-// Load environment variables directly
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const POSTMARK_SERVER_KEY = process.env.POSTMARK_SERVER_KEY;
-const PUSHCUT_WEBHOOK_URL = process.env.PUSHCUT_WEBHOOK_URL;
+const PRIVATE_KEY = Buffer.from(process.env.PRIVATE_KEY, 'base64').toString('utf-8'); // Decode if necessary
+const POSTMARK_SERVER_KEY = Buffer.from(process.env.POSTMARK_SERVER_KEY, 'base64').toString('utf-8'); // 
+const PUSHCUT_WEBHOOK_URL = Buffer.from(process.env.PUSHCUT_WEBHOOK_URL, 'base64').toString('utf-8'); // 
 
 if (!PRIVATE_KEY || !POSTMARK_SERVER_KEY || !PUSHCUT_WEBHOOK_URL) {
   console.error("Missing necessary configuration in environment variables.");
   throw new Error("Missing necessary environment configuration.");
 }
 
-// Initialize Postmark client
 const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
 
-// Form submission handler
 exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method Not Allowed" });
@@ -29,7 +25,6 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
   try {
     console.log("Received form submission request");
 
-    // Step 1: Validate and decrypt incoming data
     const { data: encryptedData } = req.body;
     if (!encryptedData) {
       console.warn("No encrypted data provided in request.");
@@ -39,34 +34,27 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
     const decryptedData = decryptWithPrivateKey(encryptedData);
     const formData = JSON.parse(decryptedData);
 
-    // Step 2: Validate formData
     if (!formData.email || !formData.name) {
       console.warn("Validation failed: Missing required fields.");
       return res.status(400).json({ success: false, message: "Validation failed: Missing required fields" });
     }
 
-    // Step 3: Increment ticket number and store data
     const ticketNumber = await incrementTicketNumber();
     formData.ticketNumber = ticketNumber;
     await db.collection("formSubmissions").add(formData);
 
-    // Step 4: Send confirmation email via Postmark
     await sendPostmarkEmail(formData);
-
-    // Step 5: Send webhook notification
     await sendWebhook(formData);
 
-    // Step 6: Respond to client
     res.status(200).json({ success: true, ticketNumber });
     console.log(`Response sent with ticket number: ${ticketNumber}`);
 
   } catch (error) {
     console.error("Form submission failed:", error);
-    res.status(500).json({ success: false, message: "Form submission failed" });
+    res.status(500).json({ success: false, message: "Form submission failed: " + error.message });
   }
 });
 
-// Decrypt function with error handling
 function decryptWithPrivateKey(encryptedData) {
   try {
     return crypto.privateDecrypt(
@@ -82,7 +70,6 @@ function decryptWithPrivateKey(encryptedData) {
   }
 }
 
-// Firebase helper to increment ticket number
 async function incrementTicketNumber() {
   const customerCountRef = db.collection("meta").doc("customerCount");
   const snapshot = await customerCountRef.get();
@@ -92,7 +79,6 @@ async function incrementTicketNumber() {
   return newCount;
 }
 
-// Send email via Postmark with error handling
 async function sendPostmarkEmail(data) {
   const emailPayload = {
     From: "kyle@fixthings.pro",
@@ -119,10 +105,9 @@ async function sendPostmarkEmail(data) {
   }
 }
 
-// Send webhook to Pushcut with error handling
 async function sendWebhook(data) {
   try {
-    const fetch = await import('node-fetch').then(module => module.default); // Dynamically import node-fetch
+    const fetch = await import('node-fetch').then(module => module.default);
     const response = await fetch(PUSHCUT_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
