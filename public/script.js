@@ -168,6 +168,7 @@ async function submitData(formData) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ formData })  // Using "formData" to clearly indicate the payload
+			console.log(body):
     });
 
     console.log(`HTTP Status: ${response.status} ${response.statusText}`);
