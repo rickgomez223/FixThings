@@ -189,7 +189,7 @@ async function submitData(encryptedData) {
   log("info", "Submitting data to server", { encryptedData });
   
   try {
-    const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
+    const response = await fetch("https://us-central1-fixthings-db8b0.cloudfunctions.net/formSubmitHandler", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ encryptedData }),

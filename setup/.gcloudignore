@@ -12,5 +12,5 @@
 # below:
 .git
 .gitignore
-
+setKeys.sh
 node_modules
