@@ -45,7 +45,7 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
     const ticketNumber = await incrementTicketNumber();
     formData.ticketNumber = ticketNumber;
 
-    await db.collection("formSubmissions").add(formData);
+    await db.collection("customers").add(formData);
     console.log("Form data saved to Firestore:", formData);
 
     const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);

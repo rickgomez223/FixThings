@@ -165,13 +165,15 @@ async function submitData(formData) {
 
   try {
     const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ formData })  // Using "formData" to clearly indicate the payload
-	
-    });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ formData })  // Using "formData" to clearly indicate the payload
+});
 
-    console.log(`HTTP Status: ${response.status} ${response.statusText}`);
+// Logging response status and body
+console.log(`HTTP Status: ${response.status} ${response.statusText}`);
+const responseBody = await response.json();
+console.log("Response Body:", responseBody);
 
     if (!response.ok) {
       const errorResult = await response.json();
