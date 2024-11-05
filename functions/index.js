@@ -7,20 +7,15 @@ const postmark = require("postmark");
 admin.initializeApp();
 const db = admin.firestore();
 
-// Load configuration securely
-const PRIVATE_KEY_BASE64 = functions.config().myapp.private_key;
-const POSTMARK_SERVER_KEY_BASE64 = functions.config().myapp.postmark_server_key;
-const PUSHCUT_WEBHOOK_URL_BASE64 = functions.config().myapp.pushcut_webhook_url;
+// Load environment variables directly
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const POSTMARK_SERVER_KEY = process.env.POSTMARK_SERVER_KEY;
+const PUSHCUT_WEBHOOK_URL = process.env.PUSHCUT_WEBHOOK_URL;
 
-if (!PRIVATE_KEY_BASE64 || !POSTMARK_SERVER_KEY_BASE64 || !PUSHCUT_WEBHOOK_URL_BASE64) {
+if (!PRIVATE_KEY || !POSTMARK_SERVER_KEY || !PUSHCUT_WEBHOOK_URL) {
   console.error("Missing necessary configuration in environment variables.");
   throw new Error("Missing necessary environment configuration.");
 }
-
-// Decode configuration variables
-const privateKeyPEM = Buffer.from(PRIVATE_KEY_BASE64, 'base64').toString('utf8');
-const POSTMARK_SERVER_KEY = Buffer.from(POSTMARK_SERVER_KEY_BASE64, 'base64').toString('utf8');
-const PUSHCUT_WEBHOOK_URL = Buffer.from(PUSHCUT_WEBHOOK_URL_BASE64, 'base64').toString('utf8');
 
 // Initialize Postmark client
 const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
@@ -76,7 +71,7 @@ function decryptWithPrivateKey(encryptedData) {
   try {
     return crypto.privateDecrypt(
       {
-        key: privateKeyPEM,
+        key: PRIVATE_KEY,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
       },
       Buffer.from(encryptedData, 'base64')
