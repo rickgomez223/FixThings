@@ -12,6 +12,10 @@
     ],
     "rewrites": [
       {
+        "source": "/api/**",  // This route will go to your Cloud Function
+        "function": "proxyDatabase"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
