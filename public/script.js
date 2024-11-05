@@ -159,59 +159,52 @@ async function startApp() {
 }
 
 
-
-
 // Submit the form data to the server
-async function submitData(encryptedData) {
-  log("info", "Submitting data to server", { encryptedData });
+async function submitData(formData) {
+  console.log("Submitting data to server:", formData);
 
   try {
     const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: encryptedData }), // Use "data" for clarity
+      body: JSON.stringify({ formData })  // Using "formData" to clearly indicate the payload
     });
 
     console.log(`HTTP Status: ${response.status} ${response.statusText}`);
 
-    const result = await response.json();
-    console.log("Response JSON:", result);
-
     if (!response.ok) {
-      console.error(`Unexpected server response: ${response.status}`, result);
-      if (response.status === 400) {
-        alert("Bad Request. Please check your input.");
-      } else if (response.status === 500) {
-        alert("Server error. Please try again later.");
-      }
-      throw new Error(`Server returned error status: ${response.status}`);
+      const errorResult = await response.json();
+      throw new Error(errorResult.message || `Server responded with status ${response.status}`);
     }
+
+    const result = await response.json();
+    console.log("Server response received:", result);
 
     return result;
   } catch (error) {
-    console.error("Error parsing response or network issue:", error.message || error);
-    alert("There was a network issue or unexpected response from the server.");
-    throw new Error("There was a network issue or unexpected response from the server.");
+    console.error("Network or server error:", error.message);
+    alert("There was an issue with the server or your network connection. Please try again later.");
+    throw new Error("Submission failed: " + error.message);
   }
 }
 
 // Process the server response
 function processResponse(result, form) {
-  log("info", "Processing server response", { result });
+  console.log("Processing server response:", result);
+
   if (result.success) {
-    console.log("Response processed: Submission success.");
-    alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
-    form.reset(); // Reset form only on success
+    alert(`Submission successful! Your ticket number is ${result.ticketNumber}. Check your email for details.`);
+    form.reset();
   } else {
-    console.error("Response processed: Submission failed.");
-    alert("Submission failed. Please try again later.");
+    console.error("Submission failed:", result.message);
+    alert("Submission failed: " + result.message);
   }
 }
 
-// Collect form data
+// Collect and validate form data before submitting
 function collectFormData() {
-  log("info", "Collecting form data");
-  return {
+  console.log("Collecting form data");
+  const data = {
     name: document.getElementById("name").value.trim(),
     email: document.getElementById("email").value.trim(),
     phone: document.getElementById("phone").value.trim(),
@@ -221,111 +214,205 @@ function collectFormData() {
     carTrim: document.getElementById("car-trim").value.trim(),
     comments: document.getElementById("comments").value.trim(),
   };
-}
 
-// Validate the collected data
-function validateData(data) {
-  log("info", "Validating data");
   const isValid = data.name && data.email && data.carYear && data.carMake && data.carModel && data.carTrim;
   if (!isValid) {
-    console.warn("Validation failed: Missing required fields.", data);
+    console.warn("Validation failed: Missing required fields", data);
+    alert("Please fill in all required fields.");
+    return null;
   }
-  return isValid;
-}
 
-// Fetch the public key
-async function fetchPublicKey(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Public key not accessible");
-  const publicKeyPEM = await response.text();
-  return await importPublicKey(publicKeyPEM);
-}
-
-// Import the public key from PEM format
-async function importPublicKey(pemKey) {
-  const binaryDer = pemToArrayBuffer(pemKey);
-  return await crypto.subtle.importKey(
-    "spki",
-    binaryDer,
-    { name: "RSA-OAEP", hash: "SHA-256" },
-    true,
-    ["encrypt"]
-  );
-}
-
-// Convert PEM format to ArrayBuffer
-function pemToArrayBuffer(pem) {
-  const base64 = pem
-    .replace(/-----BEGIN PUBLIC KEY-----/g, "")
-    .replace(/-----END PUBLIC KEY-----/g, "")
-    .replace(/\s/g, "");
-  const binaryString = atob(base64);
-  const binaryLen = binaryString.length;
-  const bytes = new Uint8Array(binaryLen);
-  for (let i = 0; i < binaryLen; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
-// Encrypt data using the public key
-async function encryptData(data, publicKey) {
-  log("info", "Encrypting data");
-  const encoder = new TextEncoder();
-  const encodedData = encoder.encode(JSON.stringify(data));
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "RSA-OAEP" },
-    publicKey,
-    encodedData
-  );
-  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  return data;
 }
 
 // Main function to handle the form submission
+async function handleFormSubmit(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const formData = collectFormData();
+
+  if (!formData) return;
+
+  try {
+    const result = await submitData(formData);
+    processResponse(result, form);
+  } catch (error) {
+    console.error("Failed to submit form:", error);
+    alert("Failed to submit your data. Please try again later.");
+  }
+}
+
+
+
+
+
+
+// // Submit the form data to the server
+// async function submitData(encryptedData) {
+//   log("info", "Submitting data to server", { encryptedData });
+
+//   try {
+//     const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ data: encryptedData }), // Use "data" for clarity
+//     });
+
+//     console.log(`HTTP Status: ${response.status} ${response.statusText}`);
+
+//     const result = await response.json();
+//     console.log("Response JSON:", result);
+
+//     if (!response.ok) {
+//       console.error(`Unexpected server response: ${response.status}`, result);
+//       if (response.status === 400) {
+//         alert("Bad Request. Please check your input.");
+//       } else if (response.status === 500) {
+//         alert("Server error. Please try again later.");
+//       }
+//       throw new Error(`Server returned error status: ${response.status}`);
+//     }
+
+//     return result;
+//   } catch (error) {
+//     console.error("Error parsing response or network issue:", error.message || error);
+//     alert("There was a network issue or unexpected response from the server.");
+//     throw new Error("There was a network issue or unexpected response from the server.");
+//   }
+// }
+
+// // Process the server response
+// function processResponse(result, form) {
+//   log("info", "Processing server response", { result });
+//   if (result.success) {
+//     console.log("Response processed: Submission success.");
+//     alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
+//     form.reset(); // Reset form only on success
+//   } else {
+//     console.error("Response processed: Submission failed.");
+//     alert("Submission failed. Please try again later.");
+//   }
+// }
+
+// // Collect form data
+// function collectFormData() {
+//   log("info", "Collecting form data");
+//   return {
+//     name: document.getElementById("name").value.trim(),
+//     email: document.getElementById("email").value.trim(),
+//     phone: document.getElementById("phone").value.trim(),
+//     carYear: document.getElementById("car-year").value.trim(),
+//     carMake: document.getElementById("car-make").value.trim(),
+//     carModel: document.getElementById("car-model").value.trim(),
+//     carTrim: document.getElementById("car-trim").value.trim(),
+//     comments: document.getElementById("comments").value.trim(),
+//   };
+// }
+
+// // Validate the collected data
+// function validateData(data) {
+//   log("info", "Validating data");
+//   const isValid = data.name && data.email && data.carYear && data.carMake && data.carModel && data.carTrim;
+//   if (!isValid) {
+//     console.warn("Validation failed: Missing required fields.", data);
+//   }
+//   return isValid;
+// }
+
+// // Fetch the public key
+// async function fetchPublicKey(url) {
+//   const response = await fetch(url);
+//   if (!response.ok) throw new Error("Public key not accessible");
+//   const publicKeyPEM = await response.text();
+//   return await importPublicKey(publicKeyPEM);
+// }
+
+// // Import the public key from PEM format
+// async function importPublicKey(pemKey) {
+//   const binaryDer = pemToArrayBuffer(pemKey);
+//   return await crypto.subtle.importKey(
+//     "spki",
+//     binaryDer,
+//     { name: "RSA-OAEP", hash: "SHA-256" },
+//     true,
+//     ["encrypt"]
+//   );
+// }
+
+// // Convert PEM format to ArrayBuffer
+// function pemToArrayBuffer(pem) {
+//   const base64 = pem
+//     .replace(/-----BEGIN PUBLIC KEY-----/g, "")
+//     .replace(/-----END PUBLIC KEY-----/g, "")
+//     .replace(/\s/g, "");
+//   const binaryString = atob(base64);
+//   const binaryLen = binaryString.length;
+//   const bytes = new Uint8Array(binaryLen);
+//   for (let i = 0; i < binaryLen; i++) {
+//     bytes[i] = binaryString.charCodeAt(i);
+//   }
+//   return bytes.buffer;
+// }
+
+// // Encrypt data using the public key
+// async function encryptData(data, publicKey) {
+//   log("info", "Encrypting data");
+//   const encoder = new TextEncoder();
+//   const encodedData = encoder.encode(JSON.stringify(data));
+//   const encrypted = await crypto.subtle.encrypt(
+//     { name: "RSA-OAEP" },
+//     publicKey,
+//     encodedData
+//   );
+//   return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+// }
+
+// // Main function to handle the form submission
+// // async function handleFormSubmit(event) {
+// //   event.preventDefault(); // Prevent the default form submission
+  
+// //   const form = event.target; // Reference to the form
+// //   const formData = collectFormData(); // Collect form data
+  
+// //   if (!validateData(formData)) {
+// //     alert("Please fill in all required fields.");
+// //     return;
+// //   }
+
+// //   try {
+// //     const publicKey = await fetchPublicKey("https://fixthings-db8b0-default-rtdb.firebaseio.com/apiKeys/PUBLIC_KEY.json"); // Replace with the actual URL
+// //     const encryptedData = await encryptData(formData, publicKey); // Encrypt the data
+// //     const result = await submitData(encryptedData); // Submit the encrypted data to the server
+// //     processResponse(result, form); // Process the server response
+// //   } catch (error) {
+// //     console.error("Submission failed:", error);
+// //     alert("There was an error submitting your data. Please try again.");
+// //   }
+// // }
+
+
+// // Main function to handle the form submission
 // async function handleFormSubmit(event) {
 //   event.preventDefault(); // Prevent the default form submission
-  
+
 //   const form = event.target; // Reference to the form
 //   const formData = collectFormData(); // Collect form data
-  
+
 //   if (!validateData(formData)) {
 //     alert("Please fill in all required fields.");
 //     return;
 //   }
 
 //   try {
-//     const publicKey = await fetchPublicKey("https://fixthings-db8b0-default-rtdb.firebaseio.com/apiKeys/PUBLIC_KEY.json"); // Replace with the actual URL
-//     const encryptedData = await encryptData(formData, publicKey); // Encrypt the data
-//     const result = await submitData(encryptedData); // Submit the encrypted data to the server
+//     // Directly submit data without encryption
+//     const result = await submitData(formData); // Submit the unencrypted data to the server
 //     processResponse(result, form); // Process the server response
 //   } catch (error) {
 //     console.error("Submission failed:", error);
 //     alert("There was an error submitting your data. Please try again.");
 //   }
 // }
-
-
-// Main function to handle the form submission
-async function handleFormSubmit(event) {
-  event.preventDefault(); // Prevent the default form submission
-
-  const form = event.target; // Reference to the form
-  const formData = collectFormData(); // Collect form data
-
-  if (!validateData(formData)) {
-    alert("Please fill in all required fields.");
-    return;
-  }
-
-  try {
-    // Directly submit data without encryption
-    const result = await submitData(formData); // Submit the unencrypted data to the server
-    processResponse(result, form); // Process the server response
-  } catch (error) {
-    console.error("Submission failed:", error);
-    alert("There was an error submitting your data. Please try again.");
-  }
-}
 
 // Logging function
 function log(type, message, data = {}) {
