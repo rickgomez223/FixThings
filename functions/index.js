@@ -335,7 +335,6 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
 const postmark = require("postmark");
-const fetch = require("node-fetch");
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -461,7 +460,8 @@ async function sendPostmarkEmail(data) {
 // Send webhook to Pushcut with error handling
 async function sendWebhook(data) {
   try {
-    const response = await fetch(PUSHCUT_WEBHOOK_URL, {
+    const fetch = await import('node-fetch'); // Dynamically import node-fetch
+    const response = await fetch.default(PUSHCUT_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -480,7 +480,6 @@ async function sendWebhook(data) {
     throw new Error("Webhook sending failed: " + error.message);
   }
 }
-
 
 
 
