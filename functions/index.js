@@ -54,11 +54,8 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
     const { PRIVATE_KEY, POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL } = await getApiKeys();
     console.log("Fetched API Keys:", { POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL });
 
-    // Ensure the private key is in PEM format
-    const formattedPrivateKey = `-----BEGIN RSA PRIVATE KEY-----\n${PRIVATE_KEY}\n-----END RSA PRIVATE KEY-----`;
-
     // Decrypt the incoming data
-    const decryptedData = decryptWithPrivateKey(encryptedData, formattedPrivateKey);
+    const decryptedData = decryptWithPrivateKey(encryptedData, PRIVATE_KEY);
     const formData = JSON.parse(decryptedData);
     console.log("Decrypted form data:", formData);
 
@@ -114,10 +111,18 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
 // Function to decrypt data with the private key
 function decryptWithPrivateKey(encryptedData, privateKey) {
   try {
+    // Create a private key object from the OpenSSH formatted private key
+    const privateKeyObj = crypto.createPrivateKey({
+      key: privateKey,
+      format: 'pem',
+      type: 'spki', // Use 'pkcs8' for OpenSSH keys
+    });
+
     return crypto.privateDecrypt(
       {
-        key: privateKey,
+        key: privateKeyObj,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: "sha256",
       },
       Buffer.from(encryptedData, 'base64')
     ).toString('utf8');

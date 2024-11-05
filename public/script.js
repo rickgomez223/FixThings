@@ -162,6 +162,7 @@ async function startApp() {
 
 
 // Submit the form data to the server
+// Function to submit encrypted data to the server
 async function submitData(encryptedData) {
   log("info", "Submitting data to server", { encryptedData });
 
@@ -237,13 +238,24 @@ function validateData(data) {
 async function fetchPublicKey(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error("Public key not accessible");
-  const publicKeyPEM = await response.text();
-  return await importPublicKey(publicKeyPEM);
+  const publicKeyOpenSSH = await response.text();
+  return await importPublicKey(publicKeyOpenSSH);
 }
 
-// Import the public key from PEM format
-async function importPublicKey(pemKey) {
-  const binaryDer = pemToArrayBuffer(pemKey);
+// Import the OpenSSH public key
+async function importPublicKey(openSSHKey) {
+  const parts = openSSHKey.split(" ");
+  if (parts.length < 2 || parts[0] !== "ssh-rsa") {
+    throw new Error("Invalid OpenSSH public key format");
+  }
+
+  // Extract the base64-encoded key
+  const base64Key = parts[1];
+
+  // Decode the base64 key
+  const binaryDer = base64ToArrayBuffer(base64Key);
+
+  // Import the key
   return await crypto.subtle.importKey(
     "spki",
     binaryDer,
@@ -253,12 +265,8 @@ async function importPublicKey(pemKey) {
   );
 }
 
-// Convert PEM format to ArrayBuffer
-function pemToArrayBuffer(pem) {
-  const base64 = pem
-    .replace(/-----BEGIN PUBLIC KEY-----/g, "")
-    .replace(/-----END PUBLIC KEY-----/g, "")
-    .replace(/\s/g, "");
+// Convert base64 format to ArrayBuffer
+function base64ToArrayBuffer(base64) {
   const binaryString = atob(base64);
   const binaryLen = binaryString.length;
   const bytes = new Uint8Array(binaryLen);
@@ -303,7 +311,6 @@ async function handleFormSubmit(event) {
     alert("There was an error submitting your data. Please try again.");
   }
 }
-
 
 
 
