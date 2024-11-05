@@ -15,7 +15,7 @@ const db = admin.firestore();
 // Function to fetch API keys from Firebase
 async function getApiKeys() {
   try {
-    const snapshot = await admin.database().ref('apikeys').once('value');
+    const snapshot = await admin.database().ref('apiKeys').once('value');
     const apiKeys = snapshot.val();
 
     if (!apiKeys) {
@@ -41,6 +41,7 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
 
   try {
     console.log("Received form submission request");
+    console.log("Incoming request body:", req.body);
 
     const { data: encryptedData } = req.body;
     if (!encryptedData) {
@@ -50,24 +51,53 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
 
     // Fetch API keys
     const { PRIVATE_KEY, POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL } = await getApiKeys();
-    
+    console.log("Fetched API Keys:", { POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL });
+
+    // Decrypt the incoming data
     const decryptedData = decryptWithPrivateKey(encryptedData, PRIVATE_KEY);
     const formData = JSON.parse(decryptedData);
+    console.log("Decrypted form data:", formData);
 
+    // Validate required fields
     if (!formData.email || !formData.name) {
       console.warn("Validation failed: Missing required fields.");
       return res.status(400).json({ success: false, message: "Validation failed: Missing required fields" });
     }
 
+    // Increment ticket number and save to Firestore
     const ticketNumber = await incrementTicketNumber();
     formData.ticketNumber = ticketNumber;
     await db.collection("formSubmissions").add(formData);
+    console.log("Form data saved to Firestore:", formData);
 
     // Initialize Postmark client with the fetched key
     const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
-    await sendPostmarkEmail(postmarkClient, formData);
-    await sendWebhook(PUSHCUT_WEBHOOK_URL, formData);
+    
+    // Prepare and send email
+    const emailPayload = {
+      From: "kyle@fixthings.pro",
+      To: formData.email,
+      TemplateAlias: "CustomerSignupEmail",
+      TemplateModel: {
+        name: formData.name,
+        ticketNumber: formData.ticketNumber,
+        phone: formData.phone,
+        carYear: formData.carYear,
+        carMake: formData.carMake,
+        carModel: formData.carModel,
+        carTrim: formData.carTrim,
+        comments: formData.comments,
+      },
+    };
+    
+    console.log("Sending email with payload:", emailPayload);
+    await postmarkClient.sendEmailWithTemplate(emailPayload);
+    console.log("Email sent successfully to:", formData.email);
 
+    // Send webhook notification
+    await sendWebhook(PUSHCUT_WEBHOOK_URL, formData);
+    
+    // Respond with success
     res.status(200).json({ success: true, ticketNumber });
     console.log(`Response sent with ticket number: ${ticketNumber}`);
 
@@ -101,33 +131,6 @@ async function incrementTicketNumber() {
   let newCount = snapshot.exists ? snapshot.data().count + 1 : 1;
   await customerCountRef.set({ count: newCount });
   return newCount;
-}
-
-// Function to send email using Postmark
-async function sendPostmarkEmail(postmarkClient, data) {
-  const emailPayload = {
-    From: "kyle@fixthings.pro",
-    To: data.email,
-    TemplateAlias: "CustomerSignupEmail",
-    TemplateModel: {
-      name: data.name,
-      ticketNumber: data.ticketNumber,
-      phone: data.phone,
-      carYear: data.carYear,
-      carMake: data.carMake,
-      carModel: data.carModel,
-      carTrim: data.carTrim,
-      comments: data.comments,
-    },
-  };
-
-  try {
-    await postmarkClient.sendEmailWithTemplate(emailPayload);
-    console.log("Email sent successfully to:", data.email);
-  } catch (error) {
-    console.error("Error sending email via Postmark:", error.message);
-    throw new Error("Email sending failed: " + error.message);
-  }
 }
 
 // Function to send webhook notification
