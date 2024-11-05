@@ -4,10 +4,11 @@ const postmark = require("postmark");
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  databaseURL: "https://fixthings-db8b0-default-rtdb.firebaseio.com/"
+  databaseURL: "https://data.fixthings.pro"
 });
 
-const db = admin.firestore();
+// You no longer need Firestore since you're using Realtime Database
+// const db = admin.firestore(); // Removed
 
 async function getApiKeys() {
   try {
@@ -42,12 +43,16 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
 
     const { POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL } = await getApiKeys();
 
+    // Increment the ticket number and attach it to the form data
     const ticketNumber = await incrementTicketNumber();
     formData.ticketNumber = ticketNumber;
 
-    await db.collection("customers").add(formData);
-    console.log("Form data saved to Firestore:", formData);
-
+    // Save form data to the Realtime Database
+    const customerRef = admin.database().ref("customers").child(ticketNumber);
+    await customerRef.set(formData);
+    console.log("Form data saved to Realtime Database:", formData);
+    
+    // Prepare and send the email
     const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
     const emailPayload = {
       From: "kyle@fixthings.pro",
@@ -69,8 +74,10 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
     await postmarkClient.sendEmailWithTemplate(emailPayload);
     console.log("Email sent to:", formData.email);
 
+    // Send a webhook notification
     await sendWebhook(PUSHCUT_WEBHOOK_URL, formData);
 
+    // Respond back with success and the ticket number
     res.status(200).json({ success: true, ticketNumber });
     console.log(`Response sent with ticket number: ${ticketNumber}`);
 
@@ -81,10 +88,14 @@ exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
 });
 
 async function incrementTicketNumber() {
-  const customerCountRef = db.collection("meta").doc("customerCount");
-  const snapshot = await customerCountRef.get();
-  const newCount = snapshot.exists ? snapshot.data().count + 1 : 1;
-  await customerCountRef.set({ count: newCount });
+  const customerCountRef = admin.database().ref("meta/customerCount");
+
+  // Use a transaction to increment the ticket number atomically
+  const newCount = await customerCountRef.transaction(currentCount => {
+    return (currentCount || 0) + 1; // Start from 0 if it doesn't exist
+  });
+
+  // Return the new ticket number
   return newCount;
 }
 
@@ -108,3 +119,25 @@ async function sendWebhook(webhookUrl, data) {
     throw new Error("Webhook sending failed: " + error.message);
   }
 }
+
+
+
+
+exports.proxyDatabase = functions.https.onRequest(async (req, res) => {
+  const dbRef = admin.database().ref(req.path); // Dynamic database reference based on request path
+
+  try {
+    if (req.method === 'GET') {
+      const snapshot = await dbRef.once('value');
+      res.status(200).send(snapshot.val());
+    } else if (req.method === 'POST') {
+      await dbRef.set(req.body); // Assuming req.body contains the data to save
+      res.status(200).send({ success: true });
+    } else {
+      res.status(405).send({ error: 'Method Not Allowed' });
+    }
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).send({ error: 'Database error' });
+  }
+});
