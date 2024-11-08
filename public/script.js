@@ -1,5 +1,4 @@
-// Your main JS file
-
+// Import Firebase modules and configuration
 import {
   app,
   database as db,
@@ -7,206 +6,173 @@ import {
   set,
   get,
   child,
-  update,
+  update, 
+  auth,
+	sendEmailVerification
 } from "./src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  log("info", "DOMContentLoaded");
+// Global constants
+const POSTMARK_URL = "https://api.postmarkapp.com/email/withTemplate";
+// apiKeys paths
+const apiKeysRef = ref(db, "apiKeys");
 
-  initializeApp();
-});
+/** Fetches Pushcut webhook URL from Firebase */
+async function getPushcutWebhookUrl() {
+  const snapshot = await get(ref(db, 'apiKeys/PUSHCUT_WEBHOOK_URL'));
+  if (!snapshot.exists()) {
+    throw new Error("Pushcut webhook URL not found in the database.");
+  }
+  return snapshot.val();
+}
+// DOM elements
+const servicesList = document.getElementById("services-list");
+const pricingTable = document.getElementById("pricing-table");
+const aboutMeTxt = document.getElementById("aboutMeTxt");
+const carouselSlide = document.querySelector(".carousel-slide");
+const carouselImages = document.querySelectorAll(".carousel-slide img");
+const pricingTxt = document.getElementById("pricingTxt");
 
+// Carousel variables
+let counter = 0;
+const size = carouselImages[0].clientWidth;
+
+document.addEventListener("DOMContentLoaded", initializeApp);
+
+/** Initializes the app */
 async function initializeApp() {
-  log("info", "App Initialization Started");
+  log("info", "Initializing App...");
   try {
-    await loadServices(); // Includes populateServicesDropdown
+    await loadServices();
     await loadAboutMe();
     await loadCarousel();
     await loadPricingText();
-
-    startApp();
+    setupEventListeners();
   } catch (error) {
-    log("warn", "App Initialization Failed");
-    log("error", error);
+    log("error", "App Initialization Failed", error);
   }
 }
 
+/** Loads services data and populates the DOM */
 async function loadServices() {
   try {
-    const servicesList = document.getElementById("services-list");
-    const pricingTable = document.getElementById("pricing-table");
-    const response = await fetch("./src/services.json");
-    if (!response.ok)
-      throw new Error(`Failed to load services.json: ${response.statusText}`);
-
-    const services = await response.json();
+    const services = await fetchJSON("./src/services.json");
     services.forEach((service) => {
-      appendServiceToList(servicesList, service);
-      appendServiceToPricingTable(pricingTable, service);
+      appendServiceToList(service);
+      appendServiceToPricingTable(service);
     });
   } catch (error) {
-    log("error", "Failed to load services JSON");
-    log("error", error);
+    log("error", "Failed to load services", error);
   }
 }
 
-function appendServiceToList(servicesList, service) {
+/** Appends a service to the services list */
+function appendServiceToList(service) {
   const listItem = document.createElement("li");
   listItem.textContent = service.name;
-  listItem.classList.add("service-item");
   servicesList.appendChild(listItem);
 }
 
-function appendServiceToPricingTable(pricingTable, service) {
-  const tableRow = document.createElement("tr");
-
-  const serviceNameCell = document.createElement("td");
-  const serviceLink = document.createElement("a");
-  serviceLink.href = "#";
-  serviceLink.textContent = service.name;
-  serviceNameCell.appendChild(serviceLink);
-
-  const priceCell = document.createElement("td");
-  priceCell.textContent = `${service.price.replace("$", "")}`;
-
-  const descriptionCell = document.createElement("td");
-  descriptionCell.textContent = service.description;
-
-  tableRow.append(serviceNameCell, priceCell, descriptionCell);
-  pricingTable.querySelector("tbody").appendChild(tableRow);
-
-  serviceLink.addEventListener("click", (event) =>
-    showServicePopup(event, service),
-  );
+/** Appends a service to the pricing table */
+function appendServiceToPricingTable(service) {
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td><a href="#">${service.name}</a></td>
+    <td>${service.price}</td>
+    <td>${service.description}</td>
+  `;
+  row.querySelector("a").addEventListener("click", (e) => showServicePopup(e, service));
+  pricingTable.querySelector("tbody").appendChild(row);
 }
 
+/** Shows a popup with service details */
 function showServicePopup(event, service) {
   event.preventDefault();
   const popup = document.getElementById("service-details-popup");
   popup.querySelector("h2").textContent = service.name;
   popup.querySelector("p:nth-child(3)").textContent = service.description;
-
+  
   const expenseList = popup.querySelector("ul");
-  expenseList.innerHTML = "";
-  service.expenses.forEach((expense) => {
-    const expenseItem = document.createElement("li");
-    expenseItem.textContent = `${expense.name}: $${expense.cost}`;
-    expenseList.appendChild(expenseItem);
-  });
+  expenseList.innerHTML = service.expenses
+    .map((expense) => `<li>${expense.name}: $${expense.cost}</li>`)
+    .join("");
 
   popup.classList.remove("hidden");
-  document.addEventListener("click", (event) => {
-    if (!popup.contains(event.target)) popup.classList.add("hidden");
+  document.addEventListener("click", (e) => {
+    if (!popup.contains(e.target)) popup.classList.add("hidden");
   });
 }
 
+/** Loads "About Me" text */
 async function loadAboutMe() {
   try {
-    const aboutMeTxt = document.getElementById("aboutMeTxt");
-    const response = await fetch("./src/aboutMe.txt");
-    if (!response.ok)
-      throw new Error(`Failed to load aboutMe.txt: ${response.statusText}`);
-    aboutMeTxt.textContent = await response.text();
+    const text = await fetchText("./src/aboutMe.txt");
+    aboutMeTxt.textContent = text;
   } catch (error) {
-    log("error", "Failed to load aboutMe.txt");
-    log("error", error);
+    log("error", "Failed to load About Me text", error);
   }
 }
 
+/** Loads the image carousel */
 async function loadCarousel() {
   try {
-    const carouselSlide = document.querySelector(".carousel-slide");
-    const carouselImages = document.querySelectorAll(".carousel-slide img");
-    let counter = 0;
-    const size = carouselImages[0].clientWidth;
-
     setInterval(() => {
-      counter = counter >= carouselImages.length - 1 ? -1 : counter;
-      carouselSlide.style.transition = "transform 0.4s ease-in-out";
-      carouselSlide.style.transform = `translateX(${-size * ++counter}px)`;
+      counter = (counter + 1) % carouselImages.length;
+      carouselSlide.style.transform = `translateX(${-size * counter}px)`;
     }, 3000);
   } catch (error) {
-    log("error", "Failed to load carousel");
-    log("error", error);
+    log("error", "Failed to load carousel", error);
   }
 }
 
+/** Loads pricing text */
 async function loadPricingText() {
   try {
-    const pricingTxt = document.getElementById("pricingTxt");
-    const response = await fetch("./src/pricing.txt");
-    if (!response.ok)
-      throw new Error(`Failed to load pricing.txt: ${response.statusText}`);
-    pricingTxt.textContent = await response.text();
+    const text = await fetchText("./src/pricing.txt");
+    pricingTxt.textContent = text;
   } catch (error) {
-    log("error", "Failed to load pricing.txt");
-    log("error", error);
+    log("error", "Failed to load pricing text", error);
   }
 }
 
-async function startApp() {
-  log("info", "App Started");
-  try {
-    // Event listeners to handle form submissions
-
-    document
-      .getElementById("contact-form")
-      .addEventListener("submit", handleFormSubmit);
-  } catch (error) {
-    log("warn", "App Start Failed");
-    log("error", error);
-  }
+/** Sets up event listeners */
+function setupEventListeners() {
+  document.getElementById("contact-form").addEventListener("submit", handleFormSubmit);
 }
 
 
-// Submit the form data to the server
-async function submitData(formData) {
-  console.log("Submitting data to server:", formData);
+/** Handles form submission */
+async function handleFormSubmit(event) {
+  event.preventDefault();
+  
+  const submitButton = document.getElementById("submit");
+  submitButton.disabled = true;  // Disable submit button to prevent multiple submissions
+  submitButton.innerText = "Submitting...";  // Update button text
 
   try {
-    const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ formData })  // Using "formData" to clearly indicate the payload
-});
+    const formData = collectFormData();
+    if (!formData) return;
 
-// Logging response status and body
-console.log(`HTTP Status: ${response.status} ${response.statusText}`);
-const responseBody = await response.json();
-console.log("Response Body:", responseBody);
+    const customerData = await prepareCustomerData(formData);
+    const notificationResponse = await sendPushcutNotification(customerData);
 
-    if (!response.ok) {
-      const errorResult = await response.json();
-      throw new Error(errorResult.message || `Server responded with status ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log("Server response received:", result);
-
-    return result;
+    // Send confirmation email using Postmark
+    await sendConfirmationEmail(customerData);
+    
+    // Success: Reset form and show success message
+    document.getElementById("contact-form").reset();
+    alert("Thank you for your submission! We'll get in touch shortly.");
+    
   } catch (error) {
-    console.error("Network or server error:", error.message);
-    alert("There was an issue with the server or your network connection. Please try again later.");
-    throw new Error("Submission failed: " + error.message);
+    log("error", "Form submission failed", error);
+    alert("Something went wrong. Please try again later.");
+  } finally {
+    submitButton.disabled = false;  // Re-enable submit button
+    submitButton.innerText = "Submit";  // Reset button text
   }
 }
 
-// Process the server response
-function processResponse(result, form) {
-  console.log("Processing server response:", result);
-
-  if (result.success) {
-    alert(`Submission successful! Your ticket number is ${result.ticketNumber}. Check your email for details.`);
-    form.reset();
-  } else {
-    console.error("Submission failed:", result.message);
-    alert("Submission failed: " + result.message);
-  }
-}
-
-// Collect and validate form data before submitting
+/** Collects and validates form data */
 function collectFormData() {
-  console.log("Collecting form data");
   const data = {
     name: document.getElementById("name").value.trim(),
     email: document.getElementById("email").value.trim(),
@@ -218,205 +184,164 @@ function collectFormData() {
     comments: document.getElementById("comments").value.trim(),
   };
 
-  const isValid = data.name && data.email && data.carYear && data.carMake && data.carModel && data.carTrim;
-  if (!isValid) {
-    console.warn("Validation failed: Missing required fields", data);
+  // Check if required fields are filled
+  if (!data.name || !data.email || !data.phone || !data.carYear || !data.carMake || !data.carModel) {
     alert("Please fill in all required fields.");
+    return null;
+  }
+
+  // Validate phone number (optional, but if filled, it should be a valid phone number)
+  if (data.phone && !/^\d{10}$/.test(data.phone)) {
+    alert("Please enter a valid phone number (10 digits).");
+    return null;
+  }
+
+  // Validate car year (ensure it's a 4-digit number)
+  if (!/^\d{4}$/.test(data.carYear)) {
+    alert("Please enter a valid car year (4 digits).");
     return null;
   }
 
   return data;
 }
-
-// Main function to handle the form submission
-async function handleFormSubmit(event) {
-  event.preventDefault();
-
-  const form = event.target;
-  const formData = collectFormData();
-
-  if (!formData) return;
-
+/** Prepares customer data and increments ticket count */
+async function prepareCustomerData(formData) {
   try {
-    const result = await submitData(formData);
-    processResponse(result, form);
+    const ticketNumber = await getCustomerCount() + 1;
+    formData.ticketNumber = ticketNumber;
+
+    await update(ref(db, 'meta/customerCount'), { count: ticketNumber });
+    await set(ref(db, `customers/${ticketNumber}`), formData);
+
+    return formData;
   } catch (error) {
-    console.error("Failed to submit form:", error);
-    alert("Failed to submit your data. Please try again later.");
+    log("error", "Failed to prepare customer data", error);
+    throw error;
+  }
+}
+
+/** Fetches the current customer count */
+async function getCustomerCount() {
+  const snapshot = await get(ref(db, 'meta/customerCount/count'));
+  if (!snapshot.exists()) {
+    return 0;
+  }
+  return snapshot.val();
+}
+
+/** Sends a notification via Pushcut */
+async function sendPushcutNotification(customerData) {
+  try {
+    const pushcutWebhookUrl = await getPushcutWebhookUrl();
+    
+    const response = await fetch(pushcutWebhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: `New Customer Lead - Ticket #${customerData.ticketNumber}`,
+        text: `Name: ${customerData.name}\n
+							 Email: ${customerData.email}\n
+							 Phone: ${customerData.phone}\n
+							 Vehicle: ${customerData.carYear} ${customerData.carMake} ${customerData.carModel} (${customerData.carTrim})\n
+							 Comments: ${customerData.comments}`,
+        data: customerData
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to send notification: ${response.statusText}`);
+    }
+
+    log("info", "Sent Pushcut notification");
+  } catch (error) {
+    log("error", "Failed to send Pushcut notification", error);
+    throw error;
   }
 }
 
 
 
+/** Sends a confirmation email using Postmark */
+async function sendConfirmationEmail(customerData) {
+  try {
+    // Fetch Postmark API key from Firebase
+    const postmarkApiKey = await (async function getPostmarkApiKey() {
+      const snapshot = await get(ref(db, 'apiKeys/POSTMARK_SERVER_KEY'));
+      if (!snapshot.exists()) {
+        throw new Error("Postmark API key not found in the database.");
+      }
+      log("info", "Retrieved Postmark API key.");
+      return snapshot.val();
+    })();
+
+    const response = await fetch(POSTMARK_URL, {
+      method: "POST",
+      headers: {
+        "X-Postmark-Server-Token": postmarkApiKey,
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        From: "kyle@fixthings.pro",
+        To: customerData.email,
+        Cc: "rickgomez223@gmail.com",
+        TemplateAlias: "CustomerSignupEmail",
+        TemplateModel: {
+          name: customerData.name,
+          ticketNumber: customerData.ticketNumber,
+          phone: customerData.phone,
+          carYear: customerData.carYear,
+          carMake: customerData.carMake,
+          carModel: customerData.carModel,
+          carTrim: customerData.carTrim,
+          comments: customerData.comments,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to send email: ${response.status} - ${response.statusText}: ${errorText}`);
+    }
+
+    log("info", "Sent confirmation email");
+  } catch (error) {
+    log("error", "Failed to send confirmation email", error);
+    throw error;
+  }
+}
 
 
 
-// // Submit the form data to the server
-// async function submitData(encryptedData) {
-//   log("info", "Submitting data to server", { encryptedData });
-
-//   try {
-//     const response = await fetch("https://formsubmithandler-77757u6a6q-uc.a.run.app", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ data: encryptedData }), // Use "data" for clarity
-//     });
-
-//     console.log(`HTTP Status: ${response.status} ${response.statusText}`);
-
-//     const result = await response.json();
-//     console.log("Response JSON:", result);
-
-//     if (!response.ok) {
-//       console.error(`Unexpected server response: ${response.status}`, result);
-//       if (response.status === 400) {
-//         alert("Bad Request. Please check your input.");
-//       } else if (response.status === 500) {
-//         alert("Server error. Please try again later.");
-//       }
-//       throw new Error(`Server returned error status: ${response.status}`);
-//     }
-
-//     return result;
-//   } catch (error) {
-//     console.error("Error parsing response or network issue:", error.message || error);
-//     alert("There was a network issue or unexpected response from the server.");
-//     throw new Error("There was a network issue or unexpected response from the server.");
-//   }
-// }
-
-// // Process the server response
-// function processResponse(result, form) {
-//   log("info", "Processing server response", { result });
-//   if (result.success) {
-//     console.log("Response processed: Submission success.");
-//     alert(`Submission success! Your ticket number is ${result.ticketNumber}. Details in your email!`);
-//     form.reset(); // Reset form only on success
-//   } else {
-//     console.error("Response processed: Submission failed.");
-//     alert("Submission failed. Please try again later.");
-//   }
-// }
-
-// // Collect form data
-// function collectFormData() {
-//   log("info", "Collecting form data");
-//   return {
-//     name: document.getElementById("name").value.trim(),
-//     email: document.getElementById("email").value.trim(),
-//     phone: document.getElementById("phone").value.trim(),
-//     carYear: document.getElementById("car-year").value.trim(),
-//     carMake: document.getElementById("car-make").value.trim(),
-//     carModel: document.getElementById("car-model").value.trim(),
-//     carTrim: document.getElementById("car-trim").value.trim(),
-//     comments: document.getElementById("comments").value.trim(),
-//   };
-// }
-
-// // Validate the collected data
-// function validateData(data) {
-//   log("info", "Validating data");
-//   const isValid = data.name && data.email && data.carYear && data.carMake && data.carModel && data.carTrim;
-//   if (!isValid) {
-//     console.warn("Validation failed: Missing required fields.", data);
-//   }
-//   return isValid;
-// }
-
-// // Fetch the public key
-// async function fetchPublicKey(url) {
-//   const response = await fetch(url);
-//   if (!response.ok) throw new Error("Public key not accessible");
-//   const publicKeyPEM = await response.text();
-//   return await importPublicKey(publicKeyPEM);
-// }
-
-// // Import the public key from PEM format
-// async function importPublicKey(pemKey) {
-//   const binaryDer = pemToArrayBuffer(pemKey);
-//   return await crypto.subtle.importKey(
-//     "spki",
-//     binaryDer,
-//     { name: "RSA-OAEP", hash: "SHA-256" },
-//     true,
-//     ["encrypt"]
-//   );
-// }
-
-// // Convert PEM format to ArrayBuffer
-// function pemToArrayBuffer(pem) {
-//   const base64 = pem
-//     .replace(/-----BEGIN PUBLIC KEY-----/g, "")
-//     .replace(/-----END PUBLIC KEY-----/g, "")
-//     .replace(/\s/g, "");
-//   const binaryString = atob(base64);
-//   const binaryLen = binaryString.length;
-//   const bytes = new Uint8Array(binaryLen);
-//   for (let i = 0; i < binaryLen; i++) {
-//     bytes[i] = binaryString.charCodeAt(i);
-//   }
-//   return bytes.buffer;
-// }
-
-// // Encrypt data using the public key
-// async function encryptData(data, publicKey) {
-//   log("info", "Encrypting data");
-//   const encoder = new TextEncoder();
-//   const encodedData = encoder.encode(JSON.stringify(data));
-//   const encrypted = await crypto.subtle.encrypt(
-//     { name: "RSA-OAEP" },
-//     publicKey,
-//     encodedData
-//   );
-//   return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-// }
-
-// // Main function to handle the form submission
-// // async function handleFormSubmit(event) {
-// //   event.preventDefault(); // Prevent the default form submission
-  
-// //   const form = event.target; // Reference to the form
-// //   const formData = collectFormData(); // Collect form data
-  
-// //   if (!validateData(formData)) {
-// //     alert("Please fill in all required fields.");
-// //     return;
-// //   }
-
-// //   try {
-// //     const publicKey = await fetchPublicKey("https://fixthings-db8b0-default-rtdb.firebaseio.com/apiKeys/PUBLIC_KEY.json"); // Replace with the actual URL
-// //     const encryptedData = await encryptData(formData, publicKey); // Encrypt the data
-// //     const result = await submitData(encryptedData); // Submit the encrypted data to the server
-// //     processResponse(result, form); // Process the server response
-// //   } catch (error) {
-// //     console.error("Submission failed:", error);
-// //     alert("There was an error submitting your data. Please try again.");
-// //   }
-// // }
-
-
-// // Main function to handle the form submission
-// async function handleFormSubmit(event) {
-//   event.preventDefault(); // Prevent the default form submission
-
-//   const form = event.target; // Reference to the form
-//   const formData = collectFormData(); // Collect form data
-
-//   if (!validateData(formData)) {
-//     alert("Please fill in all required fields.");
-//     return;
-//   }
-
-//   try {
-//     // Directly submit data without encryption
-//     const result = await submitData(formData); // Submit the unencrypted data to the server
-//     processResponse(result, form); // Process the server response
-//   } catch (error) {
-//     console.error("Submission failed:", error);
-//     alert("There was an error submitting your data. Please try again.");
-//   }
-// }
-
+/** Fetches JSON data from a URL */
+async function fetchJSON(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+  return response.json();
+}
+/** Fetches plain text data from a URL */
+async function fetchText(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+  return response.text();
+}
+/** Sends a POST request with JSON body */
+async function postJSON(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`POST failed: ${response.statusText}`);
+  return response.json();
+}
+//
+//
+//            Do Not Touch.            
+//
+//
 // Logging function
 function log(type, message, data = {}) {
   const allowedTypes = ["log", "warn", "error", "info"];
@@ -434,7 +359,7 @@ function log(type, message, data = {}) {
   function autoFillFormAndSubmit() {
     // Define sample data
     const sampleData = {
-      name: "Kyle Fixit",
+      name: "Kyle Martinez",
       email: "rickgomez223@gmail.com",
       phone: "1234567890",
       carYear: "2014",
@@ -470,5 +395,6 @@ function log(type, message, data = {}) {
   debugButton.onclick = autoFillFormAndSubmit;
   document.body.appendChild(debugButton);
 })();
+
 
 
