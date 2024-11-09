@@ -9,7 +9,7 @@ import {
   remove, // Import remove function for deletion
   auth,
   sendEmailVerification
-} from "https://fixthings.pro/src/firebase/FixThings-CustomerAppfirebaseConfig.js";
+} from "../src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
 const leadsTableBody = document.querySelector('#leadsTable tbody');
 const selectAllCheckbox = document.querySelector('#selectAll');  // This is the checkbox for "Select All"
