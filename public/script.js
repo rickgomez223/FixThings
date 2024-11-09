@@ -8,12 +8,12 @@ import {
   child,
   update, 
   auth,
-	sendEmailVerification
+  sendEmailVerification
 } from "./src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
 // Global constants
-const POSTMARK_URL = "https://api.postmarkapp.com/email/withTemplate";
-// apiKeys paths
+const POSTMARK_Template_URL = "https://api.postmarkapp.com/email/withTemplate";
+// API keys paths
 const apiKeysRef = ref(db, "apiKeys");
 
 /** Fetches Pushcut webhook URL from Firebase */
@@ -139,7 +139,6 @@ function setupEventListeners() {
   document.getElementById("contact-form").addEventListener("submit", handleFormSubmit);
 }
 
-
 /** Handles form submission */
 async function handleFormSubmit(event) {
   event.preventDefault();
@@ -182,6 +181,7 @@ function collectFormData() {
     carModel: document.getElementById("car-model").value.trim(),
     carTrim: document.getElementById("car-trim").value.trim(),
     comments: document.getElementById("comments").value.trim(),
+    submitDate: new Date().toISOString(),  // Adds the current date and time in ISO format
   };
 
   // Check if required fields are filled
@@ -204,6 +204,7 @@ function collectFormData() {
 
   return data;
 }
+
 /** Prepares customer data and increments ticket count */
 async function prepareCustomerData(formData) {
   try {
@@ -233,20 +234,20 @@ async function getCustomerCount() {
 async function sendPushcutNotification(customerData) {
   try {
     const pushcutWebhookUrl = await getPushcutWebhookUrl();
-    
+
     const response = await fetch(pushcutWebhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        title: `New Customer Lead - Ticket #${customerData.ticketNumber}`,
-        text: `Name: ${customerData.name}\n
-							 Email: ${customerData.email}\n
-							 Phone: ${customerData.phone}\n
-							 Vehicle: ${customerData.carYear} ${customerData.carMake} ${customerData.carModel} (${customerData.carTrim})\n
-							 Comments: ${customerData.comments}`,
-        data: customerData
+        title: `🚗 New Customer Lead - Ticket #${customerData.ticketNumber}`,
+        text: `**Name:** ${customerData.name}\n\n` +
+              `**Email:** [${customerData.email}](mailto:${customerData.email})\n\n` +
+              `**Phone:** [${customerData.phone}](tel:${customerData.phone})\n\n` +
+              `**Vehicle:** ${customerData.carYear} ${customerData.carMake} ${customerData.carModel} (${customerData.carTrim})\n\n` +
+              `**Comments:**\n${customerData.comments || "_No comments provided_"}\n\n` +
+              `***Submission Date:***\n${customerData.submitDate}\n\n`
       })
     });
 
@@ -261,81 +262,79 @@ async function sendPushcutNotification(customerData) {
   }
 }
 
-
-
 /** Sends a confirmation email using Postmark */
 async function sendConfirmationEmail(customerData) {
   try {
-    // Fetch Postmark API key from Firebase
-    const postmarkApiKey = await (async function getPostmarkApiKey() {
-      const snapshot = await get(ref(db, 'apiKeys/POSTMARK_SERVER_KEY'));
-      if (!snapshot.exists()) {
-        throw new Error("Postmark API key not found in the database.");
-      }
-      log("info", "Retrieved Postmark API key.");
-      return snapshot.val();
-    })();
+    // Fetch Postmark API key and Template ID from Firebase
+    const postmarkApiKeySnapshot = await get(db, 'apiKeys/');
+    const postmarkApiKey = postmarkApiKeySnapshot.val()?.POSTMARK_API_KEY;
+    const postmarkTempID = postmarkApiKeySnapshot.val()?.POSTMARK_CSU_TEMP_ID;
 
+    // Validate the presence of API key and Template ID
+    if (!postmarkApiKey) {
+      throw new Error("Postmark API key is missing.");
+    }
+    if (!postmarkTempID) {
+      throw new Error("Postmark Template ID is missing.");
+    }
+
+    // Prepare the request payload for Postmark API
     const response = await fetch(POSTMARK_URL, {
       method: "POST",
       headers: {
-        "X-Postmark-Server-Token": postmarkApiKey,
-        "Accept": "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": postmarkApiKey
       },
       body: JSON.stringify({
-        From: "kyle@fixthings.pro",
+        From: "no-reply@fixthings.pro",
         To: customerData.email,
-        Cc: "rickgomez223@gmail.com",
-        TemplateAlias: "CustomerSignupEmail",
+        TemplateId: postmarkTempID, // Template ID
         TemplateModel: {
-          name: customerData.name,
-          ticketNumber: customerData.ticketNumber,
-          phone: customerData.phone,
-          carYear: customerData.carYear,
-          carMake: customerData.carMake,
-          carModel: customerData.carModel,
-          carTrim: customerData.carTrim,
-          comments: customerData.comments,
+          customer_name: customerData.name,
+          ticket_number: customerData.ticketNumber,
+          car_make: customerData.carMake,
+          car_model: customerData.carModel,
+          car_year: customerData.carYear,
+          comments: customerData.comments || "None provided",
+          submit_date: customerData.submitDate
         }
       })
     });
 
+    // Check if the email was sent successfully
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to send email: ${response.status} - ${response.statusText}: ${errorText}`);
+      throw new Error("Failed to send email through Postmark");
     }
 
-    log("info", "Sent confirmation email");
+    log("info", "Sent confirmation email via Postmark");
+
   } catch (error) {
     log("error", "Failed to send confirmation email", error);
     throw error;
   }
 }
 
+/** Logs messages for debugging */
+function log(level, ...messages) {
+  console[level](...messages);
+}
 
-
-/** Fetches JSON data from a URL */
+/** Fetches JSON from a URL */
 async function fetchJSON(url) {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch JSON from ${url}`);
+  }
   return response.json();
 }
-/** Fetches plain text data from a URL */
+
+/** Fetches plain text from a URL */
 async function fetchText(url) {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch text from ${url}`);
+  }
   return response.text();
-}
-/** Sends a POST request with JSON body */
-async function postJSON(url, body) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) throw new Error(`POST failed: ${response.statusText}`);
-  return response.json();
 }
 //
 //
@@ -343,16 +342,16 @@ async function postJSON(url, body) {
 //
 //
 // Logging function
-function log(type, message, data = {}) {
-  const allowedTypes = ["log", "warn", "error", "info"];
-  const logEntry = `[${new Date().toISOString()}] ${message}`;
+// function log(type, message, data = {}) {
+//   const allowedTypes = ["log", "warn", "error", "info"];
+//   const logEntry = `[${new Date().toISOString()}] ${message}`;
 
-  if (allowedTypes.includes(type)) {
-    console[type](logEntry, data);
-  } else {
-    console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
-  }
-}
+//   if (allowedTypes.includes(type)) {
+//     console[type](logEntry, data);
+//   } else {
+//     console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
+//   }
+// }
 // Debugging function with button creation at the bottom of the script
 (function () {
   // Function to auto-fill and submit the form with sample data
