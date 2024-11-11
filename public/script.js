@@ -265,15 +265,9 @@ async function sendPushcutNotification(customerData) {
 /** Sends a confirmation email using Postmark */
 async function sendConfirmationEmail(customerData) {
   try {
-    // Fetch Postmark API key and Template ID from Firebase
-    const postmarkApiKeySnapshot = await get(db, 'apiKeys/');
-    const postmarkApiKey = postmarkApiKeySnapshot.val()?.POSTMARK_API_KEY;
-    const postmarkTempID = 'signup-email';
+    // Set Postmark Template ID or Alias
+    const postmarkTempID = 'signup-email'; // Ensure this is your actual Postmark template alias
 
-    // Validate the presence of API key and Template ID
-    if (!postmarkApiKey) {
-      throw new Error("Postmark API key is missing.");
-    }
     if (!postmarkTempID) {
       throw new Error("Postmark Template ID is missing.");
     }
@@ -281,10 +275,10 @@ async function sendConfirmationEmail(customerData) {
     // Prepare the request payload for the Firebase Cloud Function
     const emailPayload = {
       To: customerData.email,
-      TemplateId: postmarkTempID, // Template ID
+      TemplateAlias: postmarkTempID, // Template Alias
       TemplateModel: {
         name: customerData.name,
-				phone: customerData.phone,
+        phone: customerData.phone,
         ticketNumber: customerData.ticketNumber,
         carMake: customerData.carMake,
         carModel: customerData.carModel,
