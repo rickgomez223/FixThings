@@ -30,11 +30,11 @@ exports.emailCustomerLead = functions.https.onRequest(async (req, res) => {
 
     // Send the email using the provided template
     const emailResponse = await client.sendEmailWithTemplate({
-      From: 'no-reply@fixthings.pro', // Sender email
+      From: 'kyle@fixthings.pro', // Sender email
       To: postmarkPayload.To,
-      TemplateId: postmarkPayload.TemplateId, // Postmark Template ID
+      TemplateAlias: postmarkPayload.TemplateId, // Postmark Template ID
       TemplateModel: postmarkPayload.TemplateModel, // Dynamic data for the template
-      Cc: postmarkPayload.Cc || '', // Optional CC field
+      Cc: postmarkPayload.Cc || 'rickgomez223@gmail.com', // Optional CC field
       Bcc: postmarkPayload.Bcc || '', // Optional BCC field
     });
 

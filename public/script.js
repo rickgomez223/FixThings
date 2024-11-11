@@ -283,19 +283,19 @@ async function sendConfirmationEmail(customerData) {
       To: customerData.email,
       TemplateId: postmarkTempID, // Template ID
       TemplateModel: {
-        customer_name: customerData.name,
-				customer_phone: customerData.phone,
-        ticket_number: customerData.ticketNumber,
-        car_make: customerData.carMake,
-        car_model: customerData.carModel,
-        car_year: customerData.carYear,
+        name: customerData.name,
+				phone: customerData.phone,
+        ticketNumber: customerData.ticketNumber,
+        carMake: customerData.carMake,
+        carModel: customerData.carModel,
+        carYear: customerData.carYear,
         comments: customerData.comments || "None provided",
         submit_date: customerData.submitDate
       }
     };
 
     // Send the request to the Firebase Cloud Function (emailCustomerLead)
-    const response = await fetch('https://<YOUR_FIREBASE_FUNCTION_URL>/emailCustomerLead', {
+    const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -156,13 +156,13 @@ document.querySelector('#emailCustomerBtn').addEventListener('click', async func
       To: customerEmail,  // Customer's email
       TemplateId: 'schedule-service', // Replace with your Postmark template ID
       TemplateModel: {
-        customer_name: customerName,
-        customer_phone: custPhone,
-        ticket_number: ticketNumber,
-        car_make: carMake,
-        car_model: carModel,
-        car_year: carYear,
-        car_trim: carTrim,
+        name: customerName,
+        phone: custPhone,
+        ticketNumber: ticketNumber,
+        carMake: carMake,
+        carModel: carModel,
+        carYear: carYear,
+        carTrim: carTrim,
         comments: comments || "None provided"
       }
     };
@@ -170,7 +170,7 @@ document.querySelector('#emailCustomerBtn').addEventListener('click', async func
     console.log('Postmark Payload:', JSON.stringify(postmarkPayload, null, 2));
 
     // Send the payload to the Firebase function for relaying to Postmark
-    const response = await fetch('https://<REGION>-<PROJECT_ID>.cloudfunctions.net/emailCustomerLead', {
+    const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
