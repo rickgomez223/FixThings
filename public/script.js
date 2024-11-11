@@ -262,20 +262,17 @@ async function sendPushcutNotification(customerData) {
   }
 }
 
-/** Sends a confirmation email using Postmark */
 async function sendConfirmationEmail(customerData) {
   try {
-    // Set Postmark Template ID or Alias
-    const postmarkTempID = 'signup-email'; // Ensure this is your actual Postmark template alias
+    const postmarkTempID = 'signup-email';
 
     if (!postmarkTempID) {
       throw new Error("Postmark Template ID is missing.");
     }
 
-    // Prepare the request payload for the Firebase Cloud Function
     const emailPayload = {
       To: customerData.email,
-      TemplateAlias: postmarkTempID, // Template Alias
+      TemplateAlias: postmarkTempID,
       TemplateModel: {
         name: customerData.name,
         phone: customerData.phone,
@@ -284,32 +281,46 @@ async function sendConfirmationEmail(customerData) {
         carModel: customerData.carModel,
         carYear: customerData.carYear,
         comments: customerData.comments || "None provided",
-        submit_date: customerData.submitDate
-      }
+        submit_date: customerData.submitDate,
+      },
     };
 
-    // Send the request to the Firebase Cloud Function (emailCustomerLead)
     const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
+			mode: 'cors',
     });
 
-    // Check if the email was sent successfully
+    const responseBody = await response.text();
+
     if (!response.ok) {
-      throw new Error("Failed to send email through Firebase Cloud Function");
+      log("error", `Server error ${response.status}: ${responseBody}`, {
+        status: response.status,
+        responseBody,
+      });
+      throw new Error(`Server error: ${response.statusText}`);
     }
 
-    log("info", "Sent confirmation email via Firebase Cloud Function");
-
+    log("info", "Confirmation email sent successfully", { responseBody });
   } catch (error) {
-    log("error", "Failed to send confirmation email", error);
+    if (error.name === "TypeError") {
+      // Likely a network or CORS issue
+      log("error", "Fetch error, possibly network or CORS related", {
+        message: error.message,
+      });
+    } else {
+      // Generic or server error
+      log("error", "Failed to send confirmation email", {
+        message: error.message,
+        stack: error.stack,
+      });
+    }
     throw error;
   }
 }
-
 // /** Logs messages for debugging */
 // function log(level, ...messages) {
 //   console[level](...messages);

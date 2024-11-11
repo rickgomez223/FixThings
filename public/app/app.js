@@ -176,6 +176,7 @@ document.querySelector('#emailCustomerBtn').addEventListener('click', async func
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(postmarkPayload),
+			mode: 'cors',
     });
 
     // Handle the response
