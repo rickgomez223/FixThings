@@ -10,33 +10,41 @@
   <link rel="apple-touch-icon" href="icon.png">
   <title>Lead Management Dashboard</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* General Reset and Styles */
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f8f8f8;
       color: #333;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
       overflow: hidden;
+      -webkit-text-size-adjust: 100%; /* Prevent font scaling on iOS */
+      user-select: none; /* Disable text selection */
     }
 
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 600;
-      margin: 16px;
+      text-align: center;
       color: #007aff;
+      margin: 16px 0;
     }
 
     #app {
       flex: 1;
-      display: flex;
-      flex-direction: column;
       padding: 16px;
-      box-sizing: border-box;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
+    /* Table Styles */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -49,6 +57,7 @@
     th, td {
       padding: 12px;
       text-align: left;
+      font-size: 14px;
     }
 
     th {
@@ -69,6 +78,14 @@
       width: 40px;
     }
 
+    #noCust {
+      text-align: center;
+      color: #999;
+      padding: 20px 0;
+      font-size: 16px;
+    }
+
+    /* Button Styles */
     button {
       background-color: #007aff;
       color: white;
@@ -79,6 +96,8 @@
       font-weight: 600;
       cursor: pointer;
       transition: background-color 0.2s;
+      margin: 8px 0;
+      width: 100%;
     }
 
     button:hover {
@@ -89,127 +108,110 @@
       background-color: #004494;
     }
 
-    #leadDetails {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      display: none;
-      margin-top: 16px;
-    }
-
-    #leadDetails h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-      color: #007aff;
-    }
-
-    #leadDetails p {
-      margin: 8px 0;
-      font-size: 16px;
-    }
-
-    #leadDetails button {
-      background-color: #ff3b30;
-    }
-
-    input[type="checkbox"] {
-      transform: scale(1.2);
-    }
-
-    /* Prevent overscroll */
-    html, body {
-      overscroll-behavior: none;
-    }
-
-    /* Ensure scrolling only inside the app when necessary */
-    #app {
-      overflow-y: auto;
-    }
-
-    table tbody {
-      max-height: 60vh;
-      overflow-y: auto;
-      display: block;
-    }
-
-    table thead, table tbody tr {
-      display: table;
+    /* Modal Styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
       width: 100%;
-      table-layout: fixed;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      overflow: hidden;
     }
-		
-		.modal {
-  display: none; /* Hidden by default */
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
-}
 
-.modal-content {
-  background-color: #fff;
-  margin: 15% auto;
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-}
+    .modal-content {
+      background-color: #fff;
+      margin: 20% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      float: right;
+    }
 
-.close:hover, .close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
+    .close:hover, .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
 
-.danger-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-}
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
 
-.danger-btn:hover {
-  background-color: #c0392b;
-}
+    .danger-btn {
+      background-color: #e74c3c;
+    }
 
-.primary-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-}
+    .danger-btn:hover {
+      background-color: #c0392b;
+    }
 
-.primary-btn:hover {
-  background-color: #2980b9;
-}
+    /* Loading Bar Styles */
+    #loadingBarContainer {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background-color: #f3f3f3;
+      z-index: 9999;
+    }
+
+    #loadingBar {
+      height: 100%;
+      width: 0%;
+      background-color: #4caf50;
+      transition: width 0.2s;
+    }
+
+    /* Portrait-only Enforcement */
+    @media screen and (orientation: landscape) {
+      body::after {
+        content: "Please rotate your device to portrait.";
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 18px;
+        color: #333;
+        background-color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+      }
+
+      #app {
+        display: none;
+      }
+    }
+		.hide {
+			display: none;
+		}
   </style>
 </head>
 <body>
   <div id="app">
     <h1>Lead Management Dashboard</h1>
-
-    <button id="deleteSelectedBtn">Delete Selected</button>
+    <div id="loadingBarContainer" class="hidden">
+      <div id="loadingBar"></div>
+    </div>
+		
+		<button id="refreshPage" class="hide">Refresh</button>
+    <button id="deleteSelectedBtn" class="hide">Delete Selected</button>
+    <button id="selectAllBtn" class="hide">Select All</button>
 
     <table id="leadsTable">
       <thead>
@@ -217,47 +219,34 @@
           <th><input type="checkbox" id="selectAll"></th>
           <th>Ticket #</th>
           <th>Name</th>
-         <!--  <th>Email</th>
-          <th>Phone</th>
-          <th>Vehicle</th> -->
+          <th>Date Received</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Leads will populate here -->
+        <tr>
+          <td colspan="5" id="noCust">All Caught Up!</td>
+        </tr>
       </tbody>
     </table>
 
-    <div id="leadDetails">
-      <h2>Lead Details</h2>
-      <p><strong>Ticket #:</strong> <span id="leadTicketNumber"></span></p>
-      <p><strong>Name:</strong> <span id="leadName"></span></p>
-      <p><strong>Email:</strong> <span id="leadEmail"></span></p>
-      <p><strong>Phone:</strong> <span id="leadPhone"></span></p>
-      <p><strong>Vehicle:</strong> <span id="leadVehicle"></span></p>
-      <p><strong>Comments:</strong> <span id="leadComments"></span></p>
-      <button id="closeDetailsBtn">Close</button>
+    <div id="leadModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Lead Details</h2>
+        <p><strong>Ticket #:</strong> <span id="modalTicketNumber"></span></p>
+        <p><strong>Name:</strong> <span id="modalName"></span></p>
+        <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+        <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
+        <p><strong>Vehicle:</strong> <span id="modalVehicle"></span></p>
+        <p><strong>Comments:</strong> <span id="modalComments"></span></p>
+        <div class="modal-actions">
+          <button id="deleteLeadBtn" class="danger-btn">Delete This Item</button>
+          <button id="emailCustomerBtn" class="primary-btn">Email Customer</button>
+        </div>
+      </div>
     </div>
   </div>
-	
-	
-<div id="leadModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h2>Lead Details</h2>
-    <p><strong>Ticket #:</strong> <span id="modalTicketNumber"></span></p>
-    <p><strong>Name:</strong> <span id="modalName"></span></p>
-    <p><strong>Email:</strong> <span id="modalEmail"></span></p>
-    <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
-    <p><strong>Vehicle:</strong> <span id="modalVehicle"></span></p>
-    <p><strong>Comments:</strong> <span id="modalComments"></span></p>
-    <div class="modal-actions">
-      <button id="deleteLeadBtn" class="danger-btn">Delete This Item</button>
-      <button id="emailCustomerBtn" class="primary-btn">Email Customer</button>
-    </div>
-  </div>
-</div>
-  
   <script type="module" src="app.js"></script>
 </body>
 </html>

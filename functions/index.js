@@ -1,143 +1,46 @@
-// const functions = require("firebase-functions");
-// const admin = require("firebase-admin");
-// const postmark = require("postmark");
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const postmark = require('postmark');
 
-// admin.initializeApp({
-//   credential: admin.credential.applicationDefault(),
-//   databaseURL: "https://data.fixthings.pro"
-// });
+// Initialize Firebase Admin SDK
+admin.initializeApp();
 
-// // You no longer need Firestore since you're using Realtime Database
-// // const db = admin.firestore(); // Removed
+exports.emailCustomerLead = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send({ message: 'Only POST requests are accepted' });
+  }
 
-// async function getApiKeys() {
-//   try {
-//     const snapshot = await admin.database().ref("apiKeys").once("value");
-//     const apiKeys = snapshot.val();
+  const postmarkPayload = req.body;
 
-//     if (!apiKeys) throw new Error("No API keys found in Firebase.");
-    
-//     return { 
-//       POSTMARK_SERVER_KEY: apiKeys.POSTMARK_SERVER_KEY,
-//       PUSHCUT_WEBHOOK_URL: apiKeys.PUSHCUT_WEBHOOK_URL 
-//     };
-//   } catch (error) {
-//     console.error("Failed to fetch API keys:", error);
-//     throw new Error("Failed to fetch API keys.");
-//   }
-// }
+  // Validate payload
+  if (!postmarkPayload.To || !postmarkPayload.TemplateId || !postmarkPayload.TemplateModel) {
+    return res.status(400).send({ message: 'Invalid Postmark payload: Missing required fields' });
+  }
 
-// exports.formSubmitHandler = functions.https.onRequest(async (req, res) => {
-//   if (req.method !== "POST") {
-//     return res.status(405).json({ success: false, message: "Method Not Allowed" });
-//   }
+  try {
+    // Fetch Postmark API key from Realtime Database
+    const snapshot = await admin.database().ref('apiKeys/POSTMARK_SERVER_KEY').once('value');
+    const postmarkKey = snapshot.val();
 
-//   try {
-//     console.log("Received form submission request:", req.body);
+    if (!postmarkKey) {
+      throw new Error('Postmark API key not found in Realtime Database');
+    }
 
-//     const { formData } = req.body;
-//     if (!formData || !formData.email || !formData.name) {
-//       console.warn("Missing required form data:", formData);
-//       return res.status(400).json({ success: false, message: "Missing required fields: name and email are required." });
-//     }
+    const client = new postmark.ServerClient(postmarkKey);
 
-//     const { POSTMARK_SERVER_KEY, PUSHCUT_WEBHOOK_URL } = await getApiKeys();
+    // Send the email using the provided template
+    const emailResponse = await client.sendEmailWithTemplate({
+      From: 'no-reply@fixthings.pro', // Sender email
+      To: postmarkPayload.To,
+      TemplateId: postmarkPayload.TemplateId, // Postmark Template ID
+      TemplateModel: postmarkPayload.TemplateModel, // Dynamic data for the template
+      Cc: postmarkPayload.Cc || '', // Optional CC field
+      Bcc: postmarkPayload.Bcc || '', // Optional BCC field
+    });
 
-//     // Increment the ticket number and attach it to the form data
-//     const ticketNumber = await incrementTicketNumber();
-//     formData.ticketNumber = ticketNumber;
-
-//     // Save form data to the Realtime Database
-//     const customerRef = admin.database().ref("customers").child(ticketNumber);
-//     await customerRef.set(formData);
-//     console.log("Form data saved to Realtime Database:", formData);
-    
-//     // Prepare and send the email
-//     const postmarkClient = new postmark.ServerClient(POSTMARK_SERVER_KEY);
-//     const emailPayload = {
-//       From: "kyle@fixthings.pro",
-//       To: formData.email,
-//       TemplateAlias: "CustomerSignupEmail",
-//       TemplateModel: {
-//         name: formData.name,
-//         ticketNumber: formData.ticketNumber,
-//         phone: formData.phone,
-//         carYear: formData.carYear,
-//         carMake: formData.carMake,
-//         carModel: formData.carModel,
-//         carTrim: formData.carTrim,
-//         comments: formData.comments
-//       }
-//     };
-
-//     console.log("Sending email with payload:", emailPayload);
-//     await postmarkClient.sendEmailWithTemplate(emailPayload);
-//     console.log("Email sent to:", formData.email);
-
-//     // Send a webhook notification
-//     await sendWebhook(PUSHCUT_WEBHOOK_URL, formData);
-
-//     // Respond back with success and the ticket number
-//     res.status(200).json({ success: true, ticketNumber });
-//     console.log(`Response sent with ticket number: ${ticketNumber}`);
-
-//   } catch (error) {
-//     console.error("Form submission error:", error);
-//     res.status(500).json({ success: false, message: "Server error: " + error.message });
-//   }
-// });
-
-// async function incrementTicketNumber() {
-//   const customerCountRef = admin.database().ref("meta/customerCount");
-
-//   // Use a transaction to increment the ticket number atomically
-//   const newCount = await customerCountRef.transaction(currentCount => {
-//     return (currentCount || 0) + 1; // Start from 0 if it doesn't exist
-//   });
-
-//   // Return the new ticket number
-//   return newCount;
-// }
-
-// async function sendWebhook(webhookUrl, data) {
-//   try {
-//     const fetch = await import("node-fetch").then(module => module.default);
-//     const response = await fetch(webhookUrl, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         message: `New submission received. Ticket #${data.ticketNumber}`,
-//         ...data
-//       })
-//     });
-
-//     if (!response.ok) throw new Error(`Pushcut webhook failed with status ${response.status}`);
-
-//     console.log("Webhook notification sent.");
-//   } catch (error) {
-//     console.error("Failed to send webhook:", error);
-//     throw new Error("Webhook sending failed: " + error.message);
-//   }
-// }
-
-
-
-
-// exports.proxyDatabase = functions.https.onRequest(async (req, res) => {
-//   const dbRef = admin.database().ref(req.path); // Dynamic database reference based on request path
-
-//   try {
-//     if (req.method === 'GET') {
-//       const snapshot = await dbRef.once('value');
-//       res.status(200).send(snapshot.val());
-//     } else if (req.method === 'POST') {
-//       await dbRef.set(req.body); // Assuming req.body contains the data to save
-//       res.status(200).send({ success: true });
-//     } else {
-//       res.status(405).send({ error: 'Method Not Allowed' });
-//     }
-//   } catch (error) {
-//     console.error('Database error:', error);
-//     res.status(500).send({ error: 'Database error' });
-//   }
-// });
+    res.status(200).send({ message: 'Email sent successfully', response: emailResponse });
+  } catch (error) {
+    console.error('Postmark Error:', error);
+    res.status(500).send({ message: 'Failed to send email', error: error.message });
+  }
+});

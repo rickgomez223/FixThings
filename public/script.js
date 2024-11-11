@@ -268,7 +268,7 @@ async function sendConfirmationEmail(customerData) {
     // Fetch Postmark API key and Template ID from Firebase
     const postmarkApiKeySnapshot = await get(db, 'apiKeys/');
     const postmarkApiKey = postmarkApiKeySnapshot.val()?.POSTMARK_API_KEY;
-    const postmarkTempID = postmarkApiKeySnapshot.val()?.POSTMARK_CSU_TEMP_ID;
+    const postmarkTempID = 'signup-email';
 
     // Validate the presence of API key and Template ID
     if (!postmarkApiKey) {
@@ -278,35 +278,37 @@ async function sendConfirmationEmail(customerData) {
       throw new Error("Postmark Template ID is missing.");
     }
 
-    // Prepare the request payload for Postmark API
-    const response = await fetch(POSTMARK_URL, {
+    // Prepare the request payload for the Firebase Cloud Function
+    const emailPayload = {
+      To: customerData.email,
+      TemplateId: postmarkTempID, // Template ID
+      TemplateModel: {
+        customer_name: customerData.name,
+				customer_phone: customerData.phone,
+        ticket_number: customerData.ticketNumber,
+        car_make: customerData.carMake,
+        car_model: customerData.carModel,
+        car_year: customerData.carYear,
+        comments: customerData.comments || "None provided",
+        submit_date: customerData.submitDate
+      }
+    };
+
+    // Send the request to the Firebase Cloud Function (emailCustomerLead)
+    const response = await fetch('https://<YOUR_FIREBASE_FUNCTION_URL>/emailCustomerLead', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Postmark-Server-Token": postmarkApiKey
       },
-      body: JSON.stringify({
-        From: "no-reply@fixthings.pro",
-        To: customerData.email,
-        TemplateId: postmarkTempID, // Template ID
-        TemplateModel: {
-          customer_name: customerData.name,
-          ticket_number: customerData.ticketNumber,
-          car_make: customerData.carMake,
-          car_model: customerData.carModel,
-          car_year: customerData.carYear,
-          comments: customerData.comments || "None provided",
-          submit_date: customerData.submitDate
-        }
-      })
+      body: JSON.stringify(emailPayload),
     });
 
     // Check if the email was sent successfully
     if (!response.ok) {
-      throw new Error("Failed to send email through Postmark");
+      throw new Error("Failed to send email through Firebase Cloud Function");
     }
 
-    log("info", "Sent confirmation email via Postmark");
+    log("info", "Sent confirmation email via Firebase Cloud Function");
 
   } catch (error) {
     log("error", "Failed to send confirmation email", error);
@@ -314,10 +316,10 @@ async function sendConfirmationEmail(customerData) {
   }
 }
 
-/** Logs messages for debugging */
-function log(level, ...messages) {
-  console[level](...messages);
-}
+// /** Logs messages for debugging */
+// function log(level, ...messages) {
+//   console[level](...messages);
+// }
 
 /** Fetches JSON from a URL */
 async function fetchJSON(url) {
@@ -342,16 +344,16 @@ async function fetchText(url) {
 //
 //
 // Logging function
-// function log(type, message, data = {}) {
-//   const allowedTypes = ["log", "warn", "error", "info"];
-//   const logEntry = `[${new Date().toISOString()}] ${message}`;
+function log(type, message, data = {}) {
+  const allowedTypes = ["log", "warn", "error", "info"];
+  const logEntry = `[${new Date().toISOString()}] ${message}`;
 
-//   if (allowedTypes.includes(type)) {
-//     console[type](logEntry, data);
-//   } else {
-//     console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
-//   }
-// }
+  if (allowedTypes.includes(type)) {
+    console[type](logEntry, data);
+  } else {
+    console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
+  }
+}
 // Debugging function with button creation at the bottom of the script
 (function () {
   // Function to auto-fill and submit the form with sample data
