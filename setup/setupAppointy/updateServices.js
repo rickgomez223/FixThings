@@ -1,7 +1,4 @@
-import { 
-  app, database as db, databaseRef as ref, set, get, child, update, remove, auth, sendEmailVerification 
-} from "https://fixthings.pro/src/firebase/FixThings-CustomerAppfirebaseConfig.js";
-
+const { app, database: db, databaseRef: ref, set, get, child, update, remove, auth, sendEmailVerification } = require("https://fixthings.pro/src/firebase/FixThings-CustomerAppfirebaseConfig.js");
 const axios = require('axios');
 const fs = require('fs');
 
