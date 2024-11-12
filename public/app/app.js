@@ -1,206 +1,144 @@
 import { 
-	app, database as db, ref, set, get, child, update, remove, auth, sendEmailVerification
+  app, database as db, databaseRef as ref, set, get, child, update, remove, auth, sendEmailVerification 
 } from "../src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
-// Section For Const/Vars
-var loadingBarCont = document.querySelector('#loadingBarContainer');
-var loadingBar = document.querySelector('#loadingBar');
-var leadsTable = document.querySelector('#leadsTable');
-var leadsTableBody = document.querySelector('#leadsTable tbody');
-var selectAllCheckbox = document.querySelector('#selectAll');  
-var selectAllBtn = document.querySelector('#selectAllBtn'); 
-var deleteBtn = document.querySelector('#deleteSelectedBtn');
-var noCustSign = document.querySelector('#noCust');
-var refreshBtn = document.querySelector('#refreshPage');
-var panel = [selectAllBtn, deleteBtn, refreshBtn];
+// Logging function with proper type handling
+function log(type, message, data = {}) {
+  const allowedTypes = ["log", "warn", "error", "info"];
+  const timestamp = `[${new Date().toISOString()}]`;
+  const logEntry = `${timestamp} [${type.toUpperCase()}]: ${message}`;
 
-refreshBtn.addEventListener('click', function() {
-  fetchCustomerLeads();
-});
+  if (allowedTypes.includes(type)) {
+    console[type](logEntry, data);
+  } else {
+    console.error(`${timestamp} [ERROR]: Invalid log type: ${type}`, data);
+  }
+}
 
+// Main initialization function that runs on document load
+async function initializeApp() {
+  log('info', 'Document Loaded');
+  try {
+    await fetchCustomerLeads();
+  } catch (error) {
+    log('error', error.message);
+  }
+  log('info', 'Initialization Complete');
+}
 
-
+// Variables for DOM elements
+const leadsTable = document.querySelector('#leadsTable');
+const leadsTableBody = document.querySelector('#leadsTable tbody');
+const selectAllCheckbox = document.querySelector('#selectAll'); 
+const loadingBarCont = document.querySelector('#loadingBarContainer');
+const loadingBar = document.querySelector('#loadingBar');
+const noCustSign = document.querySelector('#noCust');
+// const selectAllBtn = document.querySelector('#selectAllBtn');
+const deleteBtn = document.querySelector('#deleteSelectedBtn');
+const refreshBtn = document.querySelector('#refreshPage');
+const panel = [ deleteBtn, refreshBtn];
 
 // Loading Bar functions
 function startLoading() {
   loadingBarCont.style.display = 'block';
   loadingBar.style.width = '0%';
-  setTimeout(() => {
-    loadingBar.style.width = '100%';
-  }, 100); // Give a little time for smooth animation
+  setTimeout(() => loadingBar.style.width = '100%', 100); // Animation
 }
 
 function stopLoading() {
   loadingBar.style.width = '100%';
   setTimeout(() => {
-    loadingBarContainer.style.display = 'none';
+    loadingBarCont.style.display = 'none';
     loadingBar.style.width = '0%';
-  }, 300); // Wait a bit before hiding the loading bar
+  }, 300);
 }
 
-// Fetching customers data from Firebase
+// Fetch customer leads from Firebase
+// Fetch customer leads from Firebase
 async function fetchCustomerLeads() {
-	panel.forEach(element => {
-  		element.style.display = 'none';
-			});
-  startLoading();  // Show the loading bar
-	var customerSnap = await get(ref(db, 'customers'));
+  panel.forEach(element => element.style.display = 'none');
+  startLoading();
   try {
-    // Check if the snapshot exists and contains data
-    if (!customerSnap.exists() || !customerSnap.val()) {
-      throw new Error("No customers found or data is empty.");
-      noCustSign.style.display = 'block';
-			panel.forEach(element => {
-  		element.style.display = 'none';
-			});
-    }
+    const customerSnap = await get(ref(db, 'customers'));
+    const customers = customerSnap.val();
+    
+    leadsTableBody.innerHTML = ''; // Clear table
+    let foundCustomer = false; // Flag to track if we find a customer with bookingEmail: 'no'
 
-    var customers = customerSnap.val();
-    noCustSign.style.display = 'none';
-    leadsTableBody.innerHTML = ''; // Clear previous entries
-
+    // Iterate over each customer
     Object.keys(customers).forEach(ticketNumber => {
       const lead = customers[ticketNumber];
-      const row = document.createElement('tr');
-      row.dataset.ticketNumber = ticketNumber; // Add ticket number as data attribute
 
-      row.innerHTML = `
-        <td><input type="checkbox" class="selectLead"></td>
-        <td>${lead.ticketNumber || 'N/A'}</td>
-        <td>${lead.name || 'N/A'}</td>
-				<td>${lead.submitDate || 'n/a'}</td>
-        <td>
-          <button id="viewLeadBtn_${ticketNumber}" onclick="viewLead('${ticketNumber}')">View Details</button>
-        </td>
-      `;
-      leadsTableBody.appendChild(row);
-
-      // Add event listener for each view button
-      const viewButton = document.querySelector(`#viewLeadBtn_${ticketNumber}`);
-      viewButton.addEventListener('click', () => viewLead(ticketNumber));
+      // Only proceed if bookingEmail is 'no'
+      if (lead.bookingEmail === 'no') {
+				
+        foundCustomer = true; // We found at least one customer
+        const row = document.createElement('tr');
+        row.dataset.ticketNumber = ticketNumber;
+        row.innerHTML = `
+          <td><input type="checkbox" class="selectLead"></td>
+          <td>${lead.ticketNumber || 'N/A'}</td>
+          <td>${lead.name || 'N/A'}</td>
+          <td>${lead.submitDate || 'n/a'}</td>
+          <td>
+            <button id="viewLeadBtn_${ticketNumber}" onclick="viewLead('${ticketNumber}')">View Details</button>
+          </td>
+        `;
+        leadsTableBody.appendChild(row);
+        const viewButton = document.querySelector(`#viewLeadBtn_${ticketNumber}`);
+        viewButton.addEventListener('click', () => viewLead(ticketNumber));
+      }
     });
+    
+    // Show noCustSign if no customers with bookingEmail 'no' were found
+    if (!foundCustomer) {
+      noCustSign.style.display = 'block';
+			log('info',"No customers found or data is empty.");
+    }
 
-    // Add event listeners to checkboxes for toggling the delete button
     const checkboxes = document.querySelectorAll('.selectLead');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('click', toggleDeleteButton);
-    });
+    checkboxes.forEach(checkbox => checkbox.addEventListener('click', toggleDeleteButton));
+
   } catch (error) {
-    console.error(error.message);
+    log('error', `Error fetching customer leads: ${error.message}`);
   } finally {
-    stopLoading();  // Hide the loading bar
-		panel.forEach(element => {
-  	element.style.display = 'block';
-		});
+    stopLoading();
+    panel.forEach(element => element.style.display = 'block');
   }
 }
 
-// Function to display the lead details
-// Define viewLead as a global function
+// View lead details
+// View the lead details (already implemented in your code)
 window.viewLead = async function(ticketNumber) {
-  startLoading();  // Show the loading bar
+  startLoading();
   try {
     const leadRef = ref(db, `customers/${ticketNumber}`);
     const snapshot = await get(leadRef);
 
-    if (snapshot.exists()) {
-      const lead = snapshot.val();
+    if (!snapshot.exists()) throw new Error("Lead not found.");
+    
+    const lead = snapshot.val();
+    document.querySelector('#modalTicketNumber').innerText = lead.ticketNumber || 'N/A';
+    document.querySelector('#modalName').innerText = lead.name || 'N/A';
+    document.querySelector('#modalEmail').innerText = lead.email || 'N/A';
+    document.querySelector('#modalPhone').innerText = lead.phone || 'N/A';
+    document.querySelector('#modalVehicle').innerText = lead.vehicle || 'N/A';
+    document.querySelector('#modalComments').innerText = lead.comments || 'No comments provided';
+    
+    // Set the ticket number for the delete button
+    document.querySelector('#deleteLeadBtn').dataset.ticketNumber = ticketNumber;
+    
+    // Show the modal
+    document.querySelector('#leadModal').style.display = 'block';
 
-      document.querySelector('#modalTicketNumber').innerText = lead.ticketNumber || 'N/A';
-      document.querySelector('#modalName').innerText = lead.name || 'N/A';
-      document.querySelector('#modalEmail').innerText = lead.email || 'N/A';
-      document.querySelector('#modalPhone').innerText = lead.phone || 'N/A';
-      document.querySelector('#modalVehicle').innerText = lead.vehicle || 'N/A';
-      document.querySelector('#modalComments').innerText = lead.comments || 'No comments provided';
-
-      // Attach ticket number to delete button for context
-      document.querySelector('#deleteLeadBtn').dataset.ticketNumber = ticketNumber;
-
-      // Display the modal
-      document.querySelector('#leadModal').style.display = 'block';
-    } else {
-      console.error('Lead not found.');
-    }
   } catch (error) {
-    console.error(`Error fetching lead details: ${error.message}`);
+    log('error', `Error fetching lead details for ticket ${ticketNumber}: ${error.message}`);
   } finally {
-    stopLoading();  // Hide the loading bar
+    stopLoading();
   }
 };
 
-document.querySelector('#emailCustomerBtn').addEventListener('click', async function () {
-  const customerEmail = document.querySelector('#modalEmail').innerText;
-  const ticketNumber = document.querySelector('#modalTicketNumber').innerText;
-  const customerName = document.querySelector('#modalName').innerText;
-  const custPhone = document.querySelector('#modalPhone').innerText;
-  const carMake = document.querySelector('#modalCarMake').innerText;
-  const carModel = document.querySelector('#modalCarModel').innerText;
-  const carYear = document.querySelector('#modalCarYear').innerText;
-  const carTrim = document.querySelector('#modalCarTrim').innerText;
-  const comments = document.querySelector('#modalComments').innerText;
-
-  // Validate email
-  if (customerEmail === 'N/A') {
-    alert("This customer does not have a valid email address.");
-    return;
-  }
-
-  startLoading(); // Show the loading bar
-
-  try {
-    // Construct the email subject
-    const emailSubject = `Follow-Up Regarding Your Ticket #${ticketNumber}`;
-
-    // Construct the payload for Firebase Cloud Function
-    const postmarkPayload = {
-      To: customerEmail,  // Customer's email
-      TemplateId: 'schedule-service', // Replace with your Postmark template ID
-      TemplateModel: {
-        name: customerName,
-        phone: custPhone,
-        ticketNumber: ticketNumber,
-        carMake: carMake,
-        carModel: carModel,
-        carYear: carYear,
-        carTrim: carTrim,
-        comments: comments || "None provided"
-      }
-    };
-
-    console.log('Postmark Payload:', JSON.stringify(postmarkPayload, null, 2));
-
-    // Send the payload to the Firebase function for relaying to Postmark
-    const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(postmarkPayload),
-			mode: 'cors',
-    });
-
-    // Handle the response
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error:', errorData);
-      alert(`Failed to send email: ${errorData.message || response.statusText}`);
-    } else {
-      alert(`Email sent successfully to ${customerEmail}`);
-    }
-
-  } catch (error) {
-    console.error('Error details:', error);
-    alert('An error occurred while sending the email.');
-  } finally {
-    stopLoading(); // Hide the loading bar
-  }
-});
-
-// Function to close the lead details view
-function closeDetails() {
-  document.querySelector('#leadDetails').style.display = 'none';
-}
-
+// Handle closing the modal when clicking the close button
 const modal = document.querySelector('#leadModal');
 const closeModalBtn = document.querySelector('.close');
 
@@ -216,20 +154,101 @@ window.addEventListener('touchstart', (event) => {
   }
 });
 
-// Also allow the Escape key to close the modal
+// Close modal when pressing the Escape key
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && modal.style.display === 'block') {
     modal.style.display = 'none';
   }
 });
 
-// Toggle the delete button enabled/disabled based on selected leads
+// Email customer handler
+document.querySelector('#emailCustomerBtn').addEventListener('touchend', async function () {
+  const customerEmail = document.querySelector('#modalEmail').innerText;
+  const ticketNumber = document.querySelector('#modalTicketNumber').innerText;
+
+  if (customerEmail === 'N/A') {
+    alert("This customer does not have a valid email address.");
+    return;
+  }
+
+  try {
+    const customerInfoDb = await get(ref(db, `customers/${ticketNumber}`));
+    if (!customerInfoDb.exists()) throw new Error(`No data found for ticket ${ticketNumber}`);
+
+    const customerInfo = customerInfoDb.val();
+
+    // Postmark payload for sending email
+    const postmarkPayload = {
+      To: customerEmail,
+      TemplateAlias: 'schedule-service',
+      TemplateModel: { ...customerInfo },
+    };
+
+    console.log('Postmark Payload:', JSON.stringify(postmarkPayload, null, 2));
+
+    // Send email request
+    const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postmarkPayload),
+      mode: 'cors',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to send email');
+    }
+
+    alert(`Email sent successfully to ${customerEmail}`);
+
+    // Update customer info with the "booked: sent" status
+    await update(ref(db, `customers/${ticketNumber}`), {
+      bookingEmail: 'sent',
+			booked: 'pending customer',
+			
+    });
+
+    console.log(`Customer ${ticketNumber} updated with 'booked: sent' status`);
+		refreshPage();
+  } catch (error) {
+    log('error', `Error sending email: ${error.message}`);
+    alert(`Email error: ${error.message}`);
+  } finally {
+    stopLoading();
+  }
+});
+
+// Toggle delete button based on selected leads
 function toggleDeleteButton() {
   const selectedLeads = document.querySelectorAll('.selectLead:checked');
-  deleteSelectedBtn.disabled = selectedLeads.length === 0;
+  deleteBtn.disabled = selectedLeads.length === 0;
 }
 
-// Function to handle Select All checkbox
+
+// Delete selected leads
+window.deleteSelectedLeads = async function() {
+  const selectedLeads = document.querySelectorAll('.selectLead:checked');
+  if (selectedLeads.length === 0) {
+    alert("Please select at least one lead to delete.");
+    return;
+  }
+
+  if (confirm("Are you sure you want to delete the selected leads?")) {
+    for (const checkbox of selectedLeads) {
+      const row = checkbox.closest('tr');
+      const ticketNumber = row.dataset.ticketNumber;
+
+      try {
+        await remove(ref(db, `customers/${ticketNumber}`));
+        row.remove(); // Remove row from table
+        log('info', `Lead #${ticketNumber} deleted.`);
+      } catch (error) {
+        log('error', `Failed to delete lead #${ticketNumber}: ${error.message}`);
+      }
+    }
+  }
+};
+
 function handleSelectAll() {
   const checkboxes = document.querySelectorAll('.selectLead');
   const isChecked = selectAllCheckbox.checked;
@@ -243,32 +262,15 @@ function handleSelectAll() {
   toggleDeleteButton();
 }
 
-// **Global function for deleting selected leads**
-window.deleteSelectedLeads = async function() {
-  const selectedLeads = document.querySelectorAll('.selectLead:checked');
-  if (selectedLeads.length === 0) {
-    alert("Please select at least one lead to delete.");
-    return;
-  }
+function refreshPage() {
+  fetchCustomerLeads();  // Call the function to re-fetch customer leads from Firebase
+  console.log("Page refreshed and customer leads reloaded.");
+}
 
-  if (confirm("Are you sure you want to delete the selected leads?")) {
-    selectedLeads.forEach(async (checkbox) => {
-      const row = checkbox.closest('tr');
-      const ticketNumber = row.dataset.ticketNumber;
 
-      try {
-        await remove(ref(db, `customers/${ticketNumber}`));
-        row.remove(); // Remove the row from the table
-        console.log(`Lead #${ticketNumber} deleted.`);
-      } catch (error) {
-        console.error(`Failed to delete lead #${ticketNumber}: ${error.message}`);
-      }
-    });
-  }
-};
-
-// Initialize Select All functionality
+// Event listeners for Select All functionality
 selectAllCheckbox.addEventListener('change', handleSelectAll);
-
-// Fetch customer data when the page loads
-fetchCustomerLeads();
+deleteBtn.addEventListener('click', deleteSelectedLeads);
+refreshBtn.addEventListener('click', refreshPage);
+// Initialize the app on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", initializeApp);

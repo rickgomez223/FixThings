@@ -2,13 +2,14 @@
 import {
   app,
   database as db,
-  ref,
+  databaseRef as ref,
   set,
   get,
   child,
   update, 
   auth,
-  sendEmailVerification
+  sendEmailVerification,
+	storage, storageRef, listAll, getDownloadURL
 } from "./src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
 // Global constants
@@ -34,7 +35,7 @@ const pricingTxt = document.getElementById("pricingTxt");
 
 // Carousel variables
 let counter = 0;
-const size = carouselImages[0].clientWidth;
+
 
 document.addEventListener("DOMContentLoaded", initializeApp);
 
@@ -56,15 +57,26 @@ async function initializeApp() {
 async function loadServices() {
   try {
     const services = await fetchJSON("./src/services.json");
+  
     services.forEach((service) => {
       appendServiceToList(service);
       appendServiceToPricingTable(service);
+			addToDropdown(service);
+			
+    
     });
   } catch (error) {
     log("error", "Failed to load services", error);
   }
 }
-
+/** Appends a service to the services list */
+function addToDropdown(service) {
+	const servicesDropdown = document.querySelector("#servicesDropdown");
+  const option = document.createElement("option");
+      option.value = service.name; 
+      option.textContent = service.name; 
+      servicesDropdown.appendChild(option);
+}
 /** Appends a service to the services list */
 function appendServiceToList(service) {
   const listItem = document.createElement("li");
@@ -112,18 +124,104 @@ async function loadAboutMe() {
   }
 }
 
-/** Loads the image carousel */
+/** Loads the image carousel dynamically from Firebase Storage */
+// Carousel variables
+
+let size = 0; // Width of each carousel item (in pixels)
+
+// Loads the image carousel dynamically from Firebase Storage
 async function loadCarousel() {
   try {
+    // Ensure carouselSlide is initialized
+    if (!carouselSlide) {
+      throw new Error('carouselSlide element not found');
+    }
+
+    const imagesListRef = storageRef(storage, 'site/images/banner'); // Adjust path as needed
+    const res = await listAll(imagesListRef); // Get a list of all files in the "carousel-images" folder
+
+    // If there are no items in the folder
+    if (res.items.length === 0) {
+      // No images found, hide the carousel
+      carouselSlide.style.display = 'none';
+      log("info", "No images found in Firebase Storage. Hiding carousel.");
+      return; // Exit the function early since there are no images to show
+    }
+
+    // Get download URLs for each image file in the folder
+    const imageUrls = await Promise.all(res.items.map(async (itemRef) => {
+      const url = await getDownloadURL(itemRef); // Get the download URL for each image
+      return url;
+    }));
+
+    // If imageUrls is empty after fetching, hide the carousel
+    if (imageUrls.length === 0) {
+      carouselSlide.style.display = 'none';
+      log("info", "No valid image URLs found. Hiding carousel.");
+      return;
+    }
+
+    // Now `imageUrls` contains the list of image URLs from Firebase Storage
+    carouselImages = imageUrls; // Set the carousel images to the URLs fetched
+
+    // Clear the existing images from the carousel (if any)
+    carouselSlide.innerHTML = "";
+
+    // Append images to the carousel
+    carouselImages.forEach((url) => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Carousel Image";
+      img.onload = () => {
+        // Calculate the width of the image and set it as the size
+        if (!size) size = img.width; // Get the width of the first image
+      };
+      carouselSlide.appendChild(img);
+    });
+
+    // Set up carousel functionality (auto-slide every 3 seconds)
     setInterval(() => {
+      if (carouselImages.length === 0) return; // No images to slide
       counter = (counter + 1) % carouselImages.length;
       carouselSlide.style.transform = `translateX(${-size * counter}px)`;
     }, 3000);
+
+    // Add event listeners for Next and Back buttons
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+
+    // Check if the buttons exist
+    if (nextBtn) {
+      nextBtn.addEventListener("click", nextImage);
+    } else {
+      throw new Error("Next button not found");
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", prevImage);
+    } else {
+      throw new Error("Previous button not found");
+    }
+
   } catch (error) {
-    log("error", "Failed to load carousel", error);
+    // Handle errors and log them with more details
+    log("error", `Failed to load carousel: ${error.message}`, error);
   }
 }
 
+// Advances the carousel to the next image
+function nextImage() {
+  if (carouselImages.length === 0) return; // If no images, do nothing
+  counter = (counter + 1) % carouselImages.length; // Go to the next image, loop back if at the end
+  carouselSlide.style.transform = `translateX(${-size * counter}px)`;
+}
+
+// Moves the carousel to the previous image
+function prevImage() {
+  if (carouselImages.length === 0) return; // If no images, do nothing
+  counter = (counter - 1 + carouselImages.length) % carouselImages.length; // Go to the previous image, loop back if at the beginning
+  carouselSlide.style.transform = `translateX(${-size * counter}px)`;
+}
 /** Loads pricing text */
 async function loadPricingText() {
   try {
@@ -182,6 +280,10 @@ function collectFormData() {
     carTrim: document.getElementById("car-trim").value.trim(),
     comments: document.getElementById("comments").value.trim(),
     submitDate: new Date().toISOString(),  // Adds the current date and time in ISO format
+		booked: 'no',
+		bookingEmail: 'no',
+		reviewed: 'no',
+		
   };
 
   // Check if required fields are filled
@@ -359,48 +461,48 @@ function log(type, message, data = {}) {
     console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
   }
 }
-// Debugging function with button creation at the bottom of the script
-(function () {
-  // Function to auto-fill and submit the form with sample data
-  function autoFillFormAndSubmit() {
-    // Define sample data
-    const sampleData = {
-      name: "Kyle Martinez",
-      email: "rickgomez223@gmail.com",
-      phone: "1234567890",
-      carYear: "2014",
-      carMake: "Chevy",
-      carModel: "Cruze",
-      carTrim: "Eco",
-      comments: "Debugging form submission",
-    };
+// // Debugging function with button creation at the bottom of the script
+// (function () {
+//   // Function to auto-fill and submit the form with sample data
+//   function autoFillFormAndSubmit() {
+//     // Define sample data
+//     const sampleData = {
+//       name: "Kyle Martinez",
+//       email: "rickgomez223@gmail.com",
+//       phone: "1234567890",
+//       carYear: "2014",
+//       carMake: "Chevy",
+//       carModel: "Cruze",
+//       carTrim: "Eco",
+//       comments: "Debugging form submission",
+//     };
 
-    // Fill out the form fields with sample data
-    document.getElementById("name").value = sampleData.name;
-    document.getElementById("email").value = sampleData.email;
-    document.getElementById("phone").value = sampleData.phone;
-    document.getElementById("car-year").value = sampleData.carYear;
-    document.getElementById("car-make").value = sampleData.carMake;
-    document.getElementById("car-model").value = sampleData.carModel;
-    document.getElementById("car-trim").value = sampleData.carTrim;
-    document.getElementById("comments").value = sampleData.comments;
+//     // Fill out the form fields with sample data
+//     document.getElementById("name").value = sampleData.name;
+//     document.getElementById("email").value = sampleData.email;
+//     document.getElementById("phone").value = sampleData.phone;
+//     document.getElementById("car-year").value = sampleData.carYear;
+//     document.getElementById("car-make").value = sampleData.carMake;
+//     document.getElementById("car-model").value = sampleData.carModel;
+//     document.getElementById("car-trim").value = sampleData.carTrim;
+//     document.getElementById("comments").value = sampleData.comments;
 
-    // Log sample data for debugging
-    log("info", "Auto-filled form with sample data:", sampleData);
+//     // Log sample data for debugging
+//     log("info", "Auto-filled form with sample data:", sampleData);
 
-    // Submit the form
-    document.getElementById("contact-form").dispatchEvent(new Event("submit"));
-  }
+//     // Submit the form
+//     document.getElementById("contact-form").dispatchEvent(new Event("submit"));
+//   }
 
-  // Create a button to trigger the debugging function
-  const debugButton = document.createElement("button");
-  debugButton.textContent = "Auto-Fill Form and Submit";
-  debugButton.style.position = "fixed";
-  debugButton.style.top = "150px";
-  debugButton.style.right = "10px";
-  debugButton.onclick = autoFillFormAndSubmit;
-  document.body.appendChild(debugButton);
-})();
+//   // Create a button to trigger the debugging function
+//   const debugButton = document.createElement("button");
+//   debugButton.textContent = "Auto-Fill Form and Submit";
+//   debugButton.style.position = "fixed";
+//   debugButton.style.top = "150px";
+//   debugButton.style.right = "10px";
+//   debugButton.onclick = autoFillFormAndSubmit;
+//   document.body.appendChild(debugButton);
+// })();
 
 
 

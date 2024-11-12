@@ -8,28 +8,21 @@
     />
     <title>KMS</title>
     <link href="style.css" rel="stylesheet" type="text/css" />
-    <!--   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js" type="module"></script> -->
-  </head>
+	</head>
   <body>
     <nav class="nav">
       <h1>Kyle's Mechanic Shop</h1>
     </nav>
     <section class="homeSection">
       <div class="welcome">
-        <div class="carousel-container hidden">
-          <div class="carousel-slide">
-            <img src="image1.jpg" alt="Shop&Equipment 1" />
-            <img src="image2.jpg" alt="Shop&Equipment 2" />
-            <img src="image3.jpg" alt="Shop&Equipment 3" />
-            <img src="image4.jpg" alt="Shop&Equipment 4" />
-          </div>
-        </div>
-
-        <!-- 
-			<button id="prevBtn">Prev</button>
-		  <button id="nextBtn">Next</button>
-			-->
+       <!-- Carousel Container -->
+<div class="carousel-container">
+  <button id="prevBtn" class="carousel-btn">Prev</button>
+  <div class="carousel-slide">
+    <!-- Carousel Images will be dynamically added here -->
+  </div>
+  <button id="nextBtn" class="carousel-btn">Next</button>
+</div>
       </div>
       <div class="aboutMe" id="aboutMe">
         <h2>About Me</h2>
@@ -88,45 +81,39 @@
     </div>
     <div class="contactForm">
       <h2>Contact Us</h2>
-      <form id="contact-form">
-        <label for="name">Name:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="First & Last Name"
-          required
-        />
+  <form id="contact-form">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" placeholder="First & Last Name" required />
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required />
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required />
 
-        <label for="phone">Phone Number:</label>
-        <input type="tel" id="phone" name="phone" required />
+    <label for="phone">Phone Number:</label>
+    <input type="tel" id="phone" name="phone" required />
 
-        <label for="car-year">Car Year:</label>
-        <input
-          type="tel"
-          id="car-year"
-          name="car_year"
-          pattern="^\d{4}$"
-          required
-        />
+    <label for="car-year">Car Year:</label>
+    <input type="tel" id="car-year" name="car_year" pattern="^\d{4}$" required />
 
-        <label for="car-make">Car Make:</label>
-        <input type="text" id="car-make" name="car_make" required />
+    <label for="car-make">Car Make:</label>
+    <input type="text" id="car-make" name="car_make" required />
 
-        <label for="car-model">Car Model:</label>
-        <input type="text" id="car-model" name="car_model" required />
+    <label for="car-model">Car Model:</label>
+    <input type="text" id="car-model" name="car_model" required />
 
-        <label for="car-trim">Car Trim:</label>
-        <input type="text" id="car-trim" name="car_trim" />
+    <label for="car-trim">Car Trim:</label>
+    <input type="text" id="car-trim" name="car_trim" />
 
-        <label for="comments">Comments:</label>
-        <textarea id="comments" name="comments" rows="4"></textarea>
+    <label for="comments">Comments:</label>
+    <textarea id="comments" name="comments" rows="4"></textarea>
 
-        <button type="submit" id="submit">Submit</button>
-      </form>
+    <!-- Dropdown menu for services -->
+    <label for="services">Select Service:</label>
+    <select id="servicesDropdown" name="services" required>
+        <option value="" disabled selected>Select a service</option>
+    </select>
+
+    <button type="submit" id="submit">Submit</button>
+</form>
     </div>
 
     <footer>

@@ -1,7 +1,9 @@
 // Import only the necessary Firebase SDKs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getDatabase, ref, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getDatabase, ref as databaseRef, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getStorage, ref as storageRef, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -21,19 +23,23 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Auth and Database
 const auth = getAuth(app);
 const database = getDatabase(app);
-
+const storage = getStorage(app);
 // Export initialized services for use in other parts of your app
 export {
   app,
   auth,
   database,
-  ref,
+  databaseRef,
   set,
   get,
   child,
   update,
 	remove,
   sendEmailVerification,
+	storage,
+	storageRef, 
+	listAll, 
+	getDownloadURL,
 };
 
 

@@ -58,5 +58,11 @@
     "price": "160.00",
     "description": "Replace suspension components for improved handling.",
     "expenses": [{ "name": "Labor (8 hours)", "cost": "160.00" }]
+  },
+	{
+    "name": "Something Else",
+    "price": "60.00",
+    "description": "Leave a comment with any questions.",
+    "expenses": [{ "name": "Labor (1 hours)", "cost": "60.00" }]
   }
 ]
