@@ -2,7 +2,7 @@
 
 # Get SimplyBook.me session token
 LOGIN_PAYLOAD='{"company_login":"fixthings","user_login":"rickgomez223@gmail.com","password":"Jergens1972."}'
-TOKEN_RESPONSE=$(curl -s -X POST 'https://user-api-v2.simplybook.me/admin/auth' -H 'Content-Type: application/json' -d "$LOGIN_PAYLOAD")
+TOKEN_RESPONSE=$(curl -s -X POST 'https://user-api-v2.simplybook.it/admin/auth' -H 'Content-Type: application/json' -d "$LOGIN_PAYLOAD")
 TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token')
 
 # Validate token
