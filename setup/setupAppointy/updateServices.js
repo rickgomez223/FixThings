@@ -19,19 +19,26 @@ async function getSimplyBookApiKey() {
 // SimplyBook.me API URL to create services
 const API_URL = 'https://user-api-v2.simplybook.me/admin/api/services';
 
-// URL for your services JSON file
+
+
+import fetch from 'node-fetch'; // ES Module style
+
 const servicesURL = 'https://fixthings.pro/src/services.json';
 
-// Function to fetch the services from the URL
 async function fetchServices() {
-  try {
-    const response = await axios.get(servicesURL);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching services JSON:', error.message);
-    throw error;
-  }
+  const response = await fetch(servicesURL);
+  const services = await response.json();
+  return services;
 }
+
+fetchServices().then(services => {
+  services.forEach(async (service) => {
+    await createSimplyBookService(service);
+  });
+}).catch(error => {
+  console.error('Error fetching services:', error);
+});
+
 
 // Function to create a service on SimplyBook.me
 async function createSimplyBookService(service, simplyBook_key) {
