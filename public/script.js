@@ -268,6 +268,20 @@ async function handleFormSubmit(event) {
   }
 }
 
+const formatDate = (date) => {
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');  // Get month (01-12)
+  const day = date.getDate().toString().padStart(2, '0');  // Get day (01-31)
+  const year = date.getFullYear();  // Get full year (YYYY)
+  
+  let hours = date.getHours();  // Get hour (0-23)
+  const minutes = date.getMinutes().toString().padStart(2, '0');  // Get minutes (00-59)
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;  // Convert hour to 12-hour format
+  hours = hours ? hours : 12;  // Hour '0' should be '12'
+  
+  return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
+};
+
 /** Collects and validates form data */
 function collectFormData() {
   const data = {
@@ -279,7 +293,7 @@ function collectFormData() {
     carModel: document.getElementById("car-model").value.trim(),
     carTrim: document.getElementById("car-trim").value.trim(),
     comments: document.getElementById("comments").value.trim(),
-    submitDate: new Date().toISOString(),  // Adds the current date and time in ISO format
+    submitDate: formatDate(new Date()),  // Returns something like "11-12-2024 03:45 PM"
 		booked: 'no',
 		bookingEmail: 'no',
 		reviewed: 'no',
@@ -461,48 +475,48 @@ function log(type, message, data = {}) {
     console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
   }
 }
-// // Debugging function with button creation at the bottom of the script
-// (function () {
-//   // Function to auto-fill and submit the form with sample data
-//   function autoFillFormAndSubmit() {
-//     // Define sample data
-//     const sampleData = {
-//       name: "Kyle Martinez",
-//       email: "rickgomez223@gmail.com",
-//       phone: "1234567890",
-//       carYear: "2014",
-//       carMake: "Chevy",
-//       carModel: "Cruze",
-//       carTrim: "Eco",
-//       comments: "Debugging form submission",
-//     };
+// Debugging function with button creation at the bottom of the script
+(function () {
+  // Function to auto-fill and submit the form with sample data
+  function autoFillFormAndSubmit() {
+    // Define sample data
+    const sampleData = {
+      name: "Kyle Martinez",
+      email: "rickgomez223@gmail.com",
+      phone: "1234567890",
+      carYear: "2014",
+      carMake: "Chevy",
+      carModel: "Cruze",
+      carTrim: "Eco",
+      comments: "Debugging form submission",
+    };
 
-//     // Fill out the form fields with sample data
-//     document.getElementById("name").value = sampleData.name;
-//     document.getElementById("email").value = sampleData.email;
-//     document.getElementById("phone").value = sampleData.phone;
-//     document.getElementById("car-year").value = sampleData.carYear;
-//     document.getElementById("car-make").value = sampleData.carMake;
-//     document.getElementById("car-model").value = sampleData.carModel;
-//     document.getElementById("car-trim").value = sampleData.carTrim;
-//     document.getElementById("comments").value = sampleData.comments;
+    // Fill out the form fields with sample data
+    document.getElementById("name").value = sampleData.name;
+    document.getElementById("email").value = sampleData.email;
+    document.getElementById("phone").value = sampleData.phone;
+    document.getElementById("car-year").value = sampleData.carYear;
+    document.getElementById("car-make").value = sampleData.carMake;
+    document.getElementById("car-model").value = sampleData.carModel;
+    document.getElementById("car-trim").value = sampleData.carTrim;
+    document.getElementById("comments").value = sampleData.comments;
 
-//     // Log sample data for debugging
-//     log("info", "Auto-filled form with sample data:", sampleData);
+    // Log sample data for debugging
+    log("info", "Auto-filled form with sample data:", sampleData);
 
-//     // Submit the form
-//     document.getElementById("contact-form").dispatchEvent(new Event("submit"));
-//   }
+    // Submit the form
+    document.getElementById("contact-form").dispatchEvent(new Event("submit"));
+  }
 
-//   // Create a button to trigger the debugging function
-//   const debugButton = document.createElement("button");
-//   debugButton.textContent = "Auto-Fill Form and Submit";
-//   debugButton.style.position = "fixed";
-//   debugButton.style.top = "150px";
-//   debugButton.style.right = "10px";
-//   debugButton.onclick = autoFillFormAndSubmit;
-//   document.body.appendChild(debugButton);
-// })();
+  // Create a button to trigger the debugging function
+  const debugButton = document.createElement("button");
+  debugButton.textContent = "Auto-Fill Form and Submit";
+  debugButton.style.position = "fixed";
+  debugButton.style.top = "150px";
+  debugButton.style.right = "10px";
+  debugButton.onclick = autoFillFormAndSubmit;
+  document.body.appendChild(debugButton);
+})();
 
 
 

@@ -1,0 +1,298 @@
+/* Global Reset and Box Model */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #eaeaea;
+  color: #444;
+  font-size: 16px; /* Base font size for better scaling */
+}
+
+/* Main App Container */
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px; /* Reduced padding for mobile */
+  min-height: 100%;
+  background-color: #f0f0f0;
+  width: 100%; /* Ensure full width */
+}
+
+/* Heading */
+h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 20px; /* Reduced margin */
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2; /* Improve line height for readability */
+}
+
+/* Table Styles */
+#leadsTable {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  table-layout: auto; /* Ensures responsive columns */
+}
+
+#leadsTable th, #leadsTable td {
+  padding: 15px; /* Reduced padding */
+  text-align: left;
+  font-size: 1rem;
+  transition: background-color 0.3s ease-in-out;
+}
+
+#leadsTable th {
+  background-color: #3498db;
+  color: white;
+  text-transform: uppercase;
+}
+
+#leadsTable tr:nth-child(even) {
+  background-color: #f7f7f7;
+}
+
+#leadsTable tr:hover {
+  background-color: #ecf0f1;
+}
+
+#leadsTable td {
+  border-bottom: 2px solid #ddd;
+}
+
+#selectAll {
+  width: 40px;
+}
+
+/* No Leads Message */
+#noCust {
+  text-align: center;
+  color: #95a5a6;
+  font-size: 1.2rem;
+  padding: 20px;
+}
+
+/* Buttons */
+button {
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%; /* Full width on smaller screens */
+}
+
+button:focus {
+  outline: none;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button.primary-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+button.primary-btn:hover {
+  background-color: #2980b9;
+}
+
+button.danger-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+button.danger-btn:hover {
+  background-color: #c0392b;
+}
+
+button.cancel-btn {
+  background-color: #95a5a6;
+  color: white;
+}
+
+button.cancel-btn:hover {
+  background-color: #7f8c8d;
+}
+
+button.hide {
+  display: none;
+}
+
+/* Modal Styling */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
+
+.close {
+  font-size: 30px;
+  color: #7f8c8d;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.close:hover {
+  color: #2c3e50;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Modal Content */
+.modal-details p {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.comments {
+  background-color: #f2f2f2;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* Edit Form */
+.modal-edit .edit-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.edit-form input, .edit-form textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  transition: border 0.3s ease;
+}
+
+.edit-form input:focus, .edit-form textarea:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+/* Modal Actions */
+.modal-edit .modal-actions {
+  justify-content: space-between;
+}
+
+#editCustomerModal {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 15px; /* Reduced margin */
+  }
+
+  #leadsTable th, #leadsTable td {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  button {
+    font-size: 0.9rem;
+    padding: 8px 14px;
+  }
+
+  .modal-content {
+    padding: 20px;
+    width: 90%;
+  }
+
+  .modal-details p {
+    font-size: 0.95rem;
+  }
+
+  .edit-form input, .edit-form textarea {
+    font-size: 0.95rem;
+  }
+
+  /* Reduce table size and increase mobile/tablet usability */
+  #leadsTable {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+
+  #leadsTable th, #leadsTable td {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+
+  button {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .modal-actions button {
+    font-size: 1rem;
+    padding: 12px;
+  }
+
+  .edit-form input, .edit-form textarea {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  /* Avoid horizontal scrolling */
+  body {
+    overflow-x: hidden;
+  }
+}

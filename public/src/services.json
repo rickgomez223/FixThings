@@ -1,68 +1,101 @@
 [
   {
-    "name": "Oil Change",
-    "price": "20.00",
+    "service_name": "Oil Change",
+    "price": 20.00,
     "description": "Change your engine oil and filter.",
-    "expenses": [{ "name": "Labor (1 hour)", "cost": "20.00" }]
+    "duration": 60,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (1 hour)", "cost": 20.00 }]
   },
   {
-    "name": "Brake Pad Replacement",
-    "price": "80.00",
+    "service_name": "Brake Pad Replacement",
+    "price": 80.00,
     "description": "Replace brake pads and inspect rotors.",
-    "expenses": [{ "name": "Labor (2 hours)", "cost": "40.00" }]
+    "duration": 120,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (2 hours)", "cost": 40.00 }]
   },
   {
-    "name": "Battery Replacement",
-    "price": "20.00",
+    "service_name": "Battery Replacement",
+    "price": 20.00,
     "description": "Replace your car battery with a new one.",
-    "expenses": [{ "name": "Labor (1 hour)", "cost": "20.00" }]
+    "duration": 60,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (1 hour)", "cost": 20.00 }]
   },
   {
-    "name": "Air Filter Replacement",
-    "price": "10.00",
+    "service_name": "Air Filter Replacement",
+    "price": 10.00,
     "description": "Replace your air filter to improve engine performance.",
-    "expenses": [{ "name": "Labor (0.5 hour)", "cost": "10.00" }]
+    "duration": 30,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (0.5 hour)", "cost": 10.00 }]
   },
   {
-    "name": "Headlight Replacement",
-    "price": "20.00",
+    "service_name": "Headlight Replacement",
+    "price": 20.00,
     "description": "Replace your headlights with new bulbs.",
-    "expenses": [{ "name": "Labor (1 hour)", "cost": "20.00" }]
+    "duration": 60,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (1 hour)", "cost": 20.00 }]
   },
   {
-    "name": "Spark Plug Replacement",
-    "price": "30.00",
+    "service_name": "Spark Plug Replacement",
+    "price": 30.00,
     "description": "Replace spark plugs to ensure smooth engine operation.",
-    "expenses": [{ "name": "Labor (1.5 hours)", "cost": "30.00" }]
+    "duration": 90,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (1.5 hours)", "cost": 30.00 }]
   },
   {
-    "name": "Timing Belt Replacement",
-    "price": "100.00",
+    "service_name": "Timing Belt Replacement",
+    "price": 100.00,
     "description": "Replace your timing belt to avoid engine damage.",
-    "expenses": [{ "name": "Labor (5 hours)", "cost": "100.00" }]
+    "duration": 300,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (5 hours)", "cost": 100.00 }]
   },
   {
-    "name": "Water Pump Replacement",
-    "price": "80.00",
+    "service_name": "Water Pump Replacement",
+    "price": 80.00,
     "description": "Replace a faulty water pump to keep your engine cool.",
-    "expenses": [{ "name": "Labor (4 hours)", "cost": "80.00" }]
+    "duration": 240,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (4 hours)", "cost": 80.00 }]
   },
   {
-    "name": "Engine Rebuild",
-    "price": "800.00",
+    "service_name": "Engine Rebuild",
+    "price": 800.00,
     "description": "Complete engine rebuild including replacing worn components.",
-    "expenses": [{ "name": "Labor (40 hours)", "cost": "800.00" }]
+    "duration": 2400,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (40 hours)", "cost": 800.00 }]
   },
   {
-    "name": "Suspension Replacement",
-    "price": "160.00",
+    "service_name": "Suspension Replacement",
+    "price": 160.00,
     "description": "Replace suspension components for improved handling.",
-    "expenses": [{ "name": "Labor (8 hours)", "cost": "160.00" }]
+    "duration": 480,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (8 hours)", "cost": 160.00 }]
   },
-	{
-    "name": "Something Else",
-    "price": "60.00",
+  {
+    "service_name": "Something Else",
+    "price": 60.00,
     "description": "Leave a comment with any questions.",
-    "expenses": [{ "name": "Labor (1 hours)", "cost": "60.00" }]
+    "duration": 60,
+    "staff_id": 1,
+    "service_type": "in-person",
+    "expenses": [{ "name": "Labor (1 hour)", "cost": 60.00 }]
   }
 ]
