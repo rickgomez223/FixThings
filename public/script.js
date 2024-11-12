@@ -387,7 +387,7 @@ async function sendConfirmationEmail(customerData) {
       },
     };
 
-    const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
+    const response = await fetch('https://fixthings.pro/api/', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

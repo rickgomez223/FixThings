@@ -12,11 +12,19 @@
     ],
     "rewrites": [
       {
+        "source": "/api/**",
+        "function": "emailCustomerLead" // Redirect to Firebase Function
+      },
+      {
+        "source": "/app",
+        "destination": "/app/app.html" // Redirect to static file
+      },
+      {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/index.html" // Catch-all for SPA routing
       }
     ]
-  },
+},
   "storage": {
     "rules": "storage.rules"
   },

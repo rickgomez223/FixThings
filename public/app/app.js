@@ -187,7 +187,7 @@ document.querySelector('#emailCustomerBtn').addEventListener('touchend', async f
     console.log('Postmark Payload:', JSON.stringify(postmarkPayload, null, 2));
 
     // Send email request
-    const response = await fetch('https://emailcustomerlead-77757u6a6q-uc.a.run.app', {
+    const response = await fetch('https://fixthings.pro/api', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(postmarkPayload),
