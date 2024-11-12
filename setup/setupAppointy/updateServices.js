@@ -2,12 +2,19 @@ import {
   app, database as db, databaseRef as ref, set, get, child, update, remove, auth, sendEmailVerification 
 } from "../../public/src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
-const axios = require('axios');
-const fs = require('fs');
+import axios from 'axios';
 
 // Your SimplyBook.me API key
 
-const simplyBook_key = await get(ref(db, 'apiKeys/SIMPLYBOOK_KEY'));
+async function getSimplyBookApiKey() {
+  const snapshot = await get(ref(db, 'apiKeys/SIMPLYBOOK_KEY'));
+  if (snapshot.exists()) {
+    return snapshot.val();
+  } else {
+    console.error('No SimplyBook API key found.');
+    throw new Error('API Key not found');
+  }
+}
 
 // SimplyBook.me API URL to create services
 const API_URL = 'https://user-api-v2.simplybook.me/admin/api/services';
@@ -15,11 +22,19 @@ const API_URL = 'https://user-api-v2.simplybook.me/admin/api/services';
 // URL for your services JSON file
 const servicesURL = 'https://fixthings.pro/src/services.json';
 
-// Read the services from services.json
-const services = JSON.parse(fs.readFileSync(servicesURL, 'utf-8'));
+// Function to fetch the services from the URL
+async function fetchServices() {
+  try {
+    const response = await axios.get(servicesURL);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching services JSON:', error.message);
+    throw error;
+  }
+}
 
 // Function to create a service on SimplyBook.me
-async function createSimplyBookService(service) {
+async function createSimplyBookService(service, simplyBook_key) {
   try {
     const response = await axios.post(API_URL, {
       service_name: service.name,
@@ -42,7 +57,22 @@ async function createSimplyBookService(service) {
   }
 }
 
-// Loop through the services and create services on SimplyBook.me
-services.forEach(async (service) => {
-  await createSimplyBookService(service);
-});
+async function main() {
+  try {
+    // Get SimplyBook API Key
+    const simplyBook_key = await getSimplyBookApiKey();
+
+    // Fetch services from JSON URL
+    const services = await fetchServices();
+
+    // Loop through the services and create services on SimplyBook.me
+    for (const service of services) {
+      await createSimplyBookService(service, simplyBook_key);
+    }
+
+  } catch (error) {
+    console.error('Error in the main function:', error.message);
+  }
+}
+
+main();
