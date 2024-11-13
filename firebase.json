@@ -12,7 +12,7 @@
     ],
     "rewrites": [
       {
-        "source": "/api/**",
+        "source": "/api",
         "function": "emailCustomerLead" // Redirect to Firebase Function
       },
       {
@@ -24,7 +24,7 @@
         "destination": "/src/calendar/calendar.html" // Catch-all for SPA routing
       },
       {
-        "source": "/**",
+        "source": "**",
         "destination": "/index.html" // Catch-all for SPA routing
       } 
     ]
