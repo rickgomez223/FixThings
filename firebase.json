@@ -20,9 +20,13 @@
         "destination": "/app/app.html" // Redirect to static file
       },
       {
+        "source": "/calendar",
+        "destination": "/src/calendar/calendar.html" // Catch-all for SPA routing
+      },
+      {
         "source": "**",
         "destination": "/index.html" // Catch-all for SPA routing
-      }
+      } 
     ]
 },
   "storage": {
