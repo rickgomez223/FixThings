@@ -1,0 +1,187 @@
+* {
+  margin: auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
+  color: #333;
+  text-align: center;
+	justify-content: center;
+	align-items: center;
+}
+
+.calendar {
+  height: 100%;
+  width: 100%;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+#prevMonthBtn, #nextMonthBtn, #monthLabel {
+  width: auto;
+  height: 100%;
+  display: inline-block;
+  padding: 10px;
+}
+
+#monthLabel {
+  font-size: 15pt;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+.calendar button {
+  
+  font-size: 14pt;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.calendar button:hover {
+  background-color: #0056b3;
+}
+
+.calendar table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+	
+}
+
+.calendar th, .calendar td {
+  padding: 10px;
+  text-align: center;
+  width: 50px;
+  height: auto;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.calendar th {
+  background-color: #f8f9fa;
+}
+
+.calendar td {
+  background-color: #f1f3f5;
+  transition: background-color 0.3s;
+}
+
+.calendar td:hover {
+  background-color: #e9ecef;
+}
+
+.calendar .current-day {
+  border: 1px solid green;
+  border-radius: 10px;
+  color: white;
+}
+
+.calendar .selected-day {
+  background-color: #28a745;
+  color: white;
+}
+
+#monthView {
+  margin: 0;
+}
+
+#dayView {
+  display: none;
+  margin: 0;
+}
+
+.booking {
+	width: 100%;
+
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.booking h3 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.booking div {
+  margin-bottom: 5px;
+}
+
+.booking button {
+  background-color: #28a745;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.booking button:hover {
+  background-color: #218838;
+}
+
+#dayView {
+  display: none;
+  
+}
+
+.booking button {
+  width: 60%;
+  padding: 12px 0;
+  font-size: 16px;
+  color: #fff;
+  background-color: #28a745;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 5px 0;
+}
+
+.booking button:hover {
+  background-color: #218838;
+}
+
+#prevDayBtn, #nextDayBtn, #monthViewBtn {
+  width: 30%;
+  height: 100%;
+  display: inline-block;
+  padding: 10px;
+  font-size: 14px;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#prevDayBtn:hover, #monthViewBtn:hover, #nextDayBtn:hover {
+  background-color: #0056b3;
+}
+
+#dayLabel h4 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+#bookingSlots {
+  margin-top: 20px;
+}

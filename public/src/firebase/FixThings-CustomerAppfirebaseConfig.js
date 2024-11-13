@@ -1,7 +1,7 @@
 // Import only the necessary Firebase SDKs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getDatabase, ref as databaseRef, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getDatabase, ref as databaseRef, set, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 import { getStorage, ref as storageRef, listAll, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
 
@@ -40,6 +40,7 @@ export {
 	storageRef, 
 	listAll, 
 	getDownloadURL,
+	onValue,
 };
 
 
