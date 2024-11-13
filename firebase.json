@@ -16,11 +16,11 @@
         "function": "emailCustomerLead" // Redirect to Firebase Function
       },
       {
-        "source": "/app/**",
+        "source": "/app",
         "destination": "/app/app.html" // Redirect to static file
       },
       {
-        "source": "/calendar/**",
+        "source": "/calendar",
         "destination": "/src/calendar/calendar.html" // Catch-all for SPA routing
       },
       {
