@@ -364,12 +364,6 @@ async function collectFormData() {
     alert("Please enter a valid car year (4 digits).");
     return null;
   }
-	// Check for duplicate customer
-  const isDuplicate = await isDuplicateCustomer(data.email, data.phone);
-  if (isDuplicate) {
-    alert("A customer with this email or phone number already exists.");
-    return null; // Stop further processing
-  }
 
   return data;
 }
@@ -387,30 +381,7 @@ async function getCustomerCount() {
 	  return 0;  // Fallback to prevent cascading errors
 	}
 }
-/** Checks if email or phone already exists in the database */
-async function isDuplicateCustomer(email, phone) {
-  try {
-    const snapshot = await get(appData.customerListRef()); // Fetch the entire customer list or use a query to limit
-    if (!snapshot.exists()) {
-      console.log("No existing customers found in DB.");
-      return false; // No duplicates since DB is empty
-    }
 
-    const customers = snapshot.val(); // Retrieve customer data
-    for (const key in customers) {
-      const customer = customers[key];
-      if (customer.email === email || customer.phone === phone) {
-        console.warn("Duplicate found:", customer);
-        return true; // Duplicate detected
-      }
-    }
-
-    return false; // No duplicates
-  } catch (error) {
-    console.error("Error checking for duplicates:", error);
-    return true; // Fail-safe: treat it as duplicate to prevent errors
-  }
-}
 /** Prepares customer data and increments ticket count */
 async function prepareCustomerData(formData) {
   try {
