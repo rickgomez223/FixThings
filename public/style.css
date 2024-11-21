@@ -1,18 +1,10 @@
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/*            Root          */
-/**/
-/**/
+/* Root Styles */
 * {
-  margin: auto;
+  margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 html {
   height: 100%;
   width: 100%;
@@ -33,69 +25,37 @@ h3 {
 p {
   font-size: 1rem;
 }
+
 body {
-  height: auto;
-  width: auto;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin: auto;
+  padding: 0 10px;
+  margin: 0 auto;
 }
-/**/
-/**/
-/**/
-/**/
-/**/
-/*     Variables And Reusable Classes     */
-/**/
-/**/
-/**/
-/**/
-/**/
+
+/* Reusable Classes */
 .hidden {
-  height: auto;
-  width: auto;
   display: none;
 }
-/**/
-/**/
-/**/
-/**/
-/**/
-/*          Everything Should Be Chronological         */
-/**/
-/**/
+
+/* Navigation Styles */
 .nav {
-  height: auto;
   width: 100%;
   text-align: center;
-  top: 0;
-  left: 0;
-  right: 0;
   position: sticky;
+  top: 0;
   z-index: 1000;
   background-color: white;
   padding: 10px;
 }
+
 .nav > h1 {
-  height: auto;
-  width: auto;
+  margin: 0;
 }
-.homeSection {
-  height: auto;
-  width: 100%;
-  padding: 10px;
-}
-.welcome {
-  height: auto;
-  width: 100%;
-}
-/**/
+
 /* Carousel */
-/**/
 .carousel-container {
   position: relative;
   width: 100%;
-  overflow: hidden; /* Hide overflow to create sliding effect */
+  overflow: hidden;
 }
 
 .carousel-slide {
@@ -106,6 +66,11 @@ body {
 .carousel-slide img {
   width: 100%;
   object-fit: cover;
+  aspect-ratio: 3/1;
+}
+
+.carousel-slide img:nth-child(2) {
+  transform: rotate(90deg);
 }
 
 .carousel-btn {
@@ -132,155 +97,111 @@ body {
 .carousel-btn:hover {
   background-color: rgba(0, 0, 0, 0.8);
 }
-/**/
-/**/
-/**/
-/**/
-/**/
+
+/* About Me */
 .aboutMe {
-  height: auto;
-  width: auto;
+  padding: 10px;
 }
+
 .aboutMe > h2 {
-  height: auto;
-  width: auto;
+  margin: 0;
 }
+
 .aboutMeTxt {
-  height: auto;
-  width: auto;
+  padding: 10px;
 }
+
+/* Services Section */
 .servicesSection {
-  height: auto;
   width: 100%;
   padding: 10px;
 }
-.servicesSection > h2 {
-  height: auto;
-  width: auto;
-}
+
 .services {
-  height: auto;
-  width: auto;
   display: flex;
-  flex-wrap: wrap; /* Allow wrapping to new rows */
-  justify-content: space-between; /* Space items evenly */
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .serviceList {
-  height: auto;
-  width: auto;
   list-style-type: none;
-  padding: 0;
   display: flex;
-  flex-wrap: wrap; /* Allow items to wrap to the next row */
+  flex-wrap: wrap;
   justify-content: space-between;
 }
 
 .serviceList li {
-  height: auto;
-  width: auto;
-  flex: 1 1 calc(50% - 10px); /* 50% width with space for gaps */
-  margin-bottom: 10px; /* Space between rows */
-  box-sizing: border-box; /* Include padding and border in width */
+  flex: 1 1 calc(50% - 10px);
+  margin-bottom: 10px;
   color: green;
 }
 
 .servicesImg {
-  height: auto;
-  width: auto;
-  max-width: 250px; /* Limit max width */
+  max-width: 250px;
 }
+
+/* Pricing Section */
 .pricing {
-  height: auto;
-  width: auto;
   padding: 10px;
 }
-.pricing > h2 {
-  height: auto;
-  width: auto;
-}
-.pricingtxt {
-  height: auto;
-  width: auto;
-}
-.manualPricingTxt {
-  height: auto;
-  width: auto;
-}
-.manualPricingTxt > p {
-  height: auto;
-  width: auto;
-}
+
 .pricingSheet {
-  height: auto;
-  width: auto;
-  border: 1px solid lightgray; /* Add a light gray border */
-  padding: 10px; /* Add padding */
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Add an inset box shadow */
+  border: 1px solid lightgray;
+  padding: 10px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
 .pricingSheet tr:nth-child(even) {
-  height: auto;
-  width: auto;
   background-color: lightgray;
 }
+
 .pricingSheet a {
-  height: auto;
-  width: auto;
-  /* Style the anchor tags inside the table */
-  text-decoration: none; /* Remove the default underline */
-  color: green; /* Set the link color */
-  font-weight: bold; /* Make the link text bold */
-  cursor: pointer; /* Change the cursor to a pointer */
+  text-decoration: none;
+  color: green;
+  font-weight: bold;
+  cursor: pointer;
 }
+
 .pricingSheet a:hover {
-  height: auto;
-  width: auto;
-  /* Style the link on hover */
-  color: darkblue; /* Change the color on hover */
-  text-decoration: underline; /* Add an underline on hover */
+  color: darkblue;
+  text-decoration: underline;
 }
+
+/* Service Popup */
 .servicePopup {
-  height: auto;
-  width: auto;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.servicePopup.hidden {
+  display: none;
+}
+
+.servicePopup .popup-content {
+  background: white;
   padding: 20px;
-  width: 300px;
-  z-index: 10;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
 }
-.popup-content {
-  height: auto;
-  width: auto;
-}
-.close-button {
-  height: auto;
-  width: auto;
+
+.servicePopup .popup-content .close-button {
   position: absolute;
   top: 10px;
   right: 10px;
   cursor: pointer;
-  font-size: 18px;
 }
-.popup-content > h2,
-.popup-content > p,
-.popup-content > h3 {
-  height: auto;
-  width: auto;
-  text-align: center;
-}
-.servicePopup.hidden {
-  height: auto;
-  width: auto;
-  pointer-events: none; /* Disable pointer events when hidden */
-}
+
+/* Contact Form */
 .contactMe {
-  height: auto;
-  width: auto;
   padding: 10px;
 }
 
@@ -348,50 +269,10 @@ body {
   margin-bottom: 15px;
 }
 
-.contact-form {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-}
-
-.contact-form h2 {
-  text-align: center;
-}
-
-.contact-form label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.contact-form input,
-.contact-form textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.contact-form button {
-  width: 100%;
-  padding: 10px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.contact-form button:hover {
-  background-color: #45a049;
-}
-
+/* Footer */
 footer {
   background-color: #f0f0f0;
   padding: 20px;
   text-align: center;
-  margin-top: 20px; /* Add some spacing from the main content */
+  margin-top: 20px;
 }

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Image Editing</title>
+  <style>
+    .image-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .image-container img {
+      width: 150px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .image-container img.selected {
+      border-color: blue;
+    }
+    canvas {
+      border: 1px solid black;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Transformations</h1>
+  <div class="image-container" id="image-container"></div>
+  
+  <div id="controls">
+    <label for="crop">Crop (e.g., "fill"):</label>
+    <input type="text" id="crop" value="fill">
+    
+    <label for="aspect-ratio">Aspect Ratio (e.g., "3:1"):</label>
+    <input type="text" id="aspect-ratio" value="3:1">
+    
+    <label for="rotate">Rotate (degrees):</label>
+    <input type="number" id="rotate" value="0">
+    
+    <button id="transform">Transform & Save</button>
+  </div>
+  
+  <canvas id="canvas"></canvas>
+
+  <script type="module">
+    import {
+      app,
+      database as db,
+      databaseRef as ref,
+      get,
+      storage,
+      storageRef,
+      listAll,
+      getDownloadURL,
+      uploadBytes
+    } from "../firebase/FixThings-CustomerAppfirebaseConfig.js";
+
+    // Elements
+    const imageContainer = document.getElementById("image-container");
+    const cropInput = document.getElementById("crop");
+    const aspectRatioInput = document.getElementById("aspect-ratio");
+    const rotateInput = document.getElementById("rotate");
+    const transformButton = document.getElementById("transform");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let selectedImageUrl = "";
+    let originalImage = new Image();
+
+    // Fetch Images from Firebase Storage
+    async function fetchImages() {
+      try {
+        const folderRef = storageRef(storage, "site/images/banner");
+        const { items } = await listAll(folderRef);
+
+        items.forEach(async (itemRef) => {
+          try {
+            const url = await getDownloadURL(itemRef);
+
+            const img = document.createElement("img");
+            img.src = url;
+            img.addEventListener("click", () => {
+              document.querySelectorAll(".image-container img").forEach((img) => img.classList.remove("selected"));
+              img.classList.add("selected");
+              selectedImageUrl = url;
+              loadImageToCanvas(url);
+            });
+            imageContainer.appendChild(img);
+          } catch (error) {
+            console.error("Error fetching image URL:", error.message);
+          }
+        });
+      } catch (error) {
+        console.error("Error listing images from Firebase Storage:", error.message);
+      }
+    }
+
+    // Load image to canvas for editing
+    function loadImageToCanvas(url) {
+      originalImage.src = url;
+      originalImage.onload = () => {
+        canvas.width = originalImage.width;
+        canvas.height = originalImage.height;
+        ctx.drawImage(originalImage, 0, 0);
+      };
+    }
+
+    // Transform and Save Image
+    transformButton.addEventListener("click", async () => {
+      try {
+        if (!selectedImageUrl) {
+          alert("Please select an image.");
+          return;
+        }
+
+        const crop = cropInput.value;
+        const aspectRatio = aspectRatioInput.value;
+        const rotate = parseInt(rotateInput.value, 10);
+
+        // Apply transformations on canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+
+        // Apply rotation
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotate * Math.PI) / 180);
+        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+        // Apply crop and aspect ratio
+        if (crop === "fill") {
+          const [width, height] = aspectRatio.split(":").map(Number);
+          const imageAspectRatio = originalImage.width / originalImage.height;
+          let cropWidth = originalImage.width;
+          let cropHeight = originalImage.height;
+
+          if (imageAspectRatio > width / height) {
+            cropWidth = originalImage.height * (width / height);
+          } else {
+            cropHeight = originalImage.width * (height / width);
+          }
+
+          ctx.drawImage(originalImage, 0, 0, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.drawImage(originalImage, 0, 0);
+        }
+
+        ctx.restore();
+
+        // Get the edited image as a Blob
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            console.error("Failed to generate blob from canvas");
+            return;
+          }
+
+          const transformedRef = storageRef(storage, `transformed-images/${Date.now()}-transformed.jpg`);
+          await uploadBytes(transformedRef, blob);
+          alert("Image transformed and saved to Firebase!");
+        });
+      } catch (error) {
+        console.error("Error during image transformation and save:", error.message);
+        alert(`Error: ${error.message}`);
+      }
+    });
+
+    // Initialize
+    fetchImages();
+  </script>
+</body>
+</html>

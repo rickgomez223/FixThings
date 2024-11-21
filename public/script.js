@@ -13,31 +13,30 @@ import {
 } from "./src/firebase/FixThings-CustomerAppfirebaseConfig.js";
 
 // Global constants
-const POSTMARK_Template_URL = "https://api.postmarkapp.com/email/withTemplate";
-// API keys paths
-const apiKeysRef = ref(db, "apiKeys");
-
-/** Fetches Pushcut webhook URL from Firebase */
-async function getPushcutWebhookUrl() {
-  const snapshot = await get(ref(db, 'apiKeys/PUSHCUT_WEBHOOK_URL'));
-  if (!snapshot.exists()) {
-    throw new Error("Pushcut webhook URL not found in the database.");
-  }
-  return snapshot.val();
-}
+const appData = {
+	POSTMARK_Template_URL: "https://api.postmarkapp.com/email/withTemplate",
+	apiKeysRef: () => ref(db, "apiKeys"),
+	pushcut_key: ref(db, 'apiKeys/PUSHCUT_WEBHOOK_URL'),
+	ticketCounter: () => ref(db, 'meta/customerCount'),
+	customerRef: (ticketNumber) => ref(db, `customers/${ticketNumber}`),
+	ticketCount: () => ref(db, 'meta/customerCount/count'),
+	api: "https://fixthings.pro/api/",
+	customer: {
+		ticketNumber: '',
+		selectedService: document.querySelector("#servicesDropdown").value.trim(),
+	},
+	
+};
+// Start
+document.addEventListener("DOMContentLoaded", initializeApp);
 // DOM elements
 const servicesList = document.getElementById("services-list");
+const servicesDropdown = document.querySelector("#servicesDropdown");
 const pricingTable = document.getElementById("pricing-table");
 const aboutMeTxt = document.getElementById("aboutMeTxt");
 const carouselSlide = document.querySelector(".carousel-slide");
-const carouselImages = document.querySelectorAll(".carousel-slide img");
+const carouselImg = document.querySelectorAll(".carousel-slide img");
 const pricingTxt = document.getElementById("pricingTxt");
-
-// Carousel variables
-let counter = 0;
-
-
-document.addEventListener("DOMContentLoaded", initializeApp);
 
 /** Initializes the app */
 async function initializeApp() {
@@ -48,72 +47,79 @@ async function initializeApp() {
     await loadCarousel();
     await loadPricingText();
     setupEventListeners();
+		
   } catch (error) {
     log("error", "App Initialization Failed", error);
   }
 }
-
 /** Loads services data and populates the DOM */
 async function loadServices() {
   try {
     const services = await fetchJSON("./src/services.json");
-  
     services.forEach((service) => {
       appendServiceToList(service);
       appendServiceToPricingTable(service);
-			addToDropdown(service);
-			
-    
+      addToDropdown(service);
     });
   } catch (error) {
     log("error", "Failed to load services", error);
   }
 }
-/** Appends a service to the services list */
+/** Appends a service to the services dropdown */
 function addToDropdown(service) {
-	const servicesDropdown = document.querySelector("#servicesDropdown");
   const option = document.createElement("option");
-      option.value = service.name; 
-      option.textContent = service.name; 
-      servicesDropdown.appendChild(option);
+  option.value = service.service_name; // Fixed key
+  option.textContent = service.service_name; // Fixed key
+  servicesDropdown.appendChild(option);
 }
 /** Appends a service to the services list */
 function appendServiceToList(service) {
   const listItem = document.createElement("li");
-  listItem.textContent = service.name;
+  listItem.textContent = service.service_name; // Fixed key
   servicesList.appendChild(listItem);
 }
-
 /** Appends a service to the pricing table */
 function appendServiceToPricingTable(service) {
   const row = document.createElement("tr");
   row.innerHTML = `
-    <td><a href="#">${service.name}</a></td>
-    <td>${service.price}</td>
+    <td><a href="#">${service.service_name}</a></td> <!-- Fixed key -->
+    <td>$${service.price.toFixed(2)}</td> <!-- Added formatting -->
     <td>${service.description}</td>
   `;
   row.querySelector("a").addEventListener("click", (e) => showServicePopup(e, service));
   pricingTable.querySelector("tbody").appendChild(row);
 }
-
 /** Shows a popup with service details */
 function showServicePopup(event, service) {
   event.preventDefault();
+  
   const popup = document.getElementById("service-details-popup");
-  popup.querySelector("h2").textContent = service.name;
+  const closeButton = popup.querySelector(".close-button");
+  
+  // Set the content of the popup
+  popup.querySelector("h2").textContent = service.service_name;
   popup.querySelector("p:nth-child(3)").textContent = service.description;
   
   const expenseList = popup.querySelector("ul");
   expenseList.innerHTML = service.expenses
-    .map((expense) => `<li>${expense.name}: $${expense.cost}</li>`)
+    .map((expense) => `<li>${expense.name}: $${expense.cost.toFixed(2)}</li>`)
     .join("");
 
+  // Show the popup
   popup.classList.remove("hidden");
+  
+  // Close the popup when the close button is clicked
+  closeButton.addEventListener("click", () => {
+    popup.classList.add("hidden");
+  });
+
+  // Close the popup when clicking outside of it
   document.addEventListener("click", (e) => {
-    if (!popup.contains(e.target)) popup.classList.add("hidden");
+    if (!popup.contains(e.target) && !event.target.closest(".servicePopup")) {
+      popup.classList.add("hidden");
+    }
   });
 }
-
 /** Loads "About Me" text */
 async function loadAboutMe() {
   try {
@@ -123,103 +129,102 @@ async function loadAboutMe() {
     log("error", "Failed to load About Me text", error);
   }
 }
+// Carousel variables
+let size = 0; // Width of each carousel item (in pixels)
+let counter = 0; // Tracks the current slide
+let carouselImages = []; // Stores the image URLs
 
 /** Loads the image carousel dynamically from Firebase Storage */
-// Carousel variables
-
-let size = 0; // Width of each carousel item (in pixels)
-
-// Loads the image carousel dynamically from Firebase Storage
 async function loadCarousel() {
   try {
     // Ensure carouselSlide is initialized
     if (!carouselSlide) {
-      throw new Error('carouselSlide element not found');
+      throw new Error("carouselSlide element not found");
     }
 
-    const imagesListRef = storageRef(storage, 'site/images/banner'); // Adjust path as needed
-    const res = await listAll(imagesListRef); // Get a list of all files in the "carousel-images" folder
+    const imagesListRef = storageRef(storage, "site/images/banner"); // Adjust path as needed
+    const res = await listAll(imagesListRef); // Get a list of all files in the folder
 
-    // If there are no items in the folder
     if (res.items.length === 0) {
-      // No images found, hide the carousel
-      carouselSlide.style.display = 'none';
+      // No images found
+      carouselSlide.style.display = "none";
       log("info", "No images found in Firebase Storage. Hiding carousel.");
-      return; // Exit the function early since there are no images to show
+      return;
     }
 
-    // Get download URLs for each image file in the folder
-    const imageUrls = await Promise.all(res.items.map(async (itemRef) => {
-      const url = await getDownloadURL(itemRef); // Get the download URL for each image
-      return url;
-    }));
+    // Get download URLs for all images
+    const imageUrls = await Promise.all(
+      res.items.map((itemRef) => getDownloadURL(itemRef))
+    );
 
-    // If imageUrls is empty after fetching, hide the carousel
     if (imageUrls.length === 0) {
-      carouselSlide.style.display = 'none';
+      carouselSlide.style.display = "none";
       log("info", "No valid image URLs found. Hiding carousel.");
       return;
     }
 
-    // Now `imageUrls` contains the list of image URLs from Firebase Storage
-    carouselImages = imageUrls; // Set the carousel images to the URLs fetched
+    carouselImages = imageUrls; // Store the image URLs
+    carouselSlide.innerHTML = ""; // Clear existing images
 
-    // Clear the existing images from the carousel (if any)
-    carouselSlide.innerHTML = "";
+    // Append new images to the carousel
+    await Promise.all(
+      carouselImages.map((url) => {
+        return new Promise((resolve) => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = "Carousel Image";
+          img.onload = () => {
+            if (!size) size = img.width; // Set size based on the first image
+            resolve();
+          };
+          carouselSlide.appendChild(img);
+        });
+      })
+    );
 
-    // Append images to the carousel
-    carouselImages.forEach((url) => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.alt = "Carousel Image";
-      img.onload = () => {
-        // Calculate the width of the image and set it as the size
-        if (!size) size = img.width; // Get the width of the first image
-      };
-      carouselSlide.appendChild(img);
-    });
-
-    // Set up carousel functionality (auto-slide every 3 seconds)
+    // Start carousel auto-slide
     setInterval(() => {
-      if (carouselImages.length === 0) return; // No images to slide
+      if (carouselImages.length === 0) return;
       counter = (counter + 1) % carouselImages.length;
       carouselSlide.style.transform = `translateX(${-size * counter}px)`;
     }, 3000);
 
-    // Add event listeners for Next and Back buttons
-    const nextBtn = document.getElementById("nextBtn");
-    const prevBtn = document.getElementById("prevBtn");
-
-    // Check if the buttons exist
-    if (nextBtn) {
-      nextBtn.addEventListener("click", nextImage);
-    } else {
-      throw new Error("Next button not found");
-    }
-
-    if (prevBtn) {
-      prevBtn.addEventListener("click", prevImage);
-    } else {
-      throw new Error("Previous button not found");
-    }
-
+    // Set up Next/Prev button functionality
+    setupCarouselControls();
   } catch (error) {
-    // Handle errors and log them with more details
     log("error", `Failed to load carousel: ${error.message}`, error);
   }
 }
 
-// Advances the carousel to the next image
+/** Sets up event listeners for carousel navigation buttons */
+function setupCarouselControls() {
+  const nextBtn = document.getElementById("nextBtn");
+  const prevBtn = document.getElementById("prevBtn");
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", nextImage);
+  } else {
+    log("warn", "Next button not found");
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", prevImage);
+  } else {
+    log("warn", "Previous button not found");
+  }
+}
+
+/** Advances to the next image in the carousel */
 function nextImage() {
-  if (carouselImages.length === 0) return; // If no images, do nothing
-  counter = (counter + 1) % carouselImages.length; // Go to the next image, loop back if at the end
+  if (carouselImages.length === 0) return;
+  counter = (counter + 1) % carouselImages.length;
   carouselSlide.style.transform = `translateX(${-size * counter}px)`;
 }
 
-// Moves the carousel to the previous image
+/** Moves to the previous image in the carousel */
 function prevImage() {
-  if (carouselImages.length === 0) return; // If no images, do nothing
-  counter = (counter - 1 + carouselImages.length) % carouselImages.length; // Go to the previous image, loop back if at the beginning
+  if (carouselImages.length === 0) return;
+  counter = (counter - 1 + carouselImages.length) % carouselImages.length;
   carouselSlide.style.transform = `translateX(${-size * counter}px)`;
 }
 /** Loads pricing text */
@@ -231,59 +236,51 @@ async function loadPricingText() {
     log("error", "Failed to load pricing text", error);
   }
 }
-
 /** Sets up event listeners */
 function setupEventListeners() {
   document.getElementById("contact-form").addEventListener("submit", handleFormSubmit);
 }
-
 /** Handles form submission */
 async function handleFormSubmit(event) {
   event.preventDefault();
-  
   const submitButton = document.getElementById("submit");
-  submitButton.disabled = true;  // Disable submit button to prevent multiple submissions
-  submitButton.innerText = "Submitting...";  // Update button text
-
+  const setButtonState = (isSubmitting) => {
+    submitButton.disabled = isSubmitting;
+    submitButton.innerText = isSubmitting ? "Submitting..." : "Submit";
+  };
+  setButtonState(true); // Disable
   try {
-    const formData = collectFormData();
+    const formData = await collectFormData();
     if (!formData) return;
-
-    const customerData = await prepareCustomerData(formData);
-    const notificationResponse = await sendPushcutNotification(customerData);
-
-    // Send confirmation email using Postmark
-    await sendConfirmationEmail(customerData);
+		
+		await prepareCustomerData(formData);
+		
+		await sendConfirmationEmail(formData);
     
-    // Success: Reset form and show success message
+    await sendPushcutNotification(formData);
+   
     document.getElementById("contact-form").reset();
-    alert("Thank you for your submission! We'll get in touch shortly.");
-    
+    alert("Thank you for your submission!");
   } catch (error) {
-    log("error", "Form submission failed", error);
-    alert("Something went wrong. Please try again later.");
+    console.error("Form submission failed", error);
+    alert("Something went wrong. Please try again.");
   } finally {
-    submitButton.disabled = false;  // Re-enable submit button
-    submitButton.innerText = "Submit";  // Reset button text
+    setButtonState(false); // Re-enable
   }
 }
-
 const formatDate = (date) => {
   const month = (date.getMonth() + 1).toString().padStart(2, '0');  // Get month (01-12)
   const day = date.getDate().toString().padStart(2, '0');  // Get day (01-31)
   const year = date.getFullYear();  // Get full year (YYYY)
-  
   let hours = date.getHours();  // Get hour (0-23)
   const minutes = date.getMinutes().toString().padStart(2, '0');  // Get minutes (00-59)
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;  // Convert hour to 12-hour format
   hours = hours ? hours : 12;  // Hour '0' should be '12'
-  
   return `${month}-${day}-${year} ${hours}:${minutes} ${ampm}`;
 };
-
 /** Collects and validates form data */
-function collectFormData() {
+async function collectFormData() {
   const data = {
     name: document.getElementById("name").value.trim(),
     email: document.getElementById("email").value.trim(),
@@ -293,55 +290,95 @@ function collectFormData() {
     carModel: document.getElementById("car-model").value.trim(),
     carTrim: document.getElementById("car-trim").value.trim(),
     comments: document.getElementById("comments").value.trim(),
+		service: document.querySelector("#servicesDropdown")?.value.trim(),
     submitDate: formatDate(new Date()),  // Returns something like "11-12-2024 03:45 PM"
 		booked: 'no',
 		bookingEmail: 'no',
 		reviewed: 'no',
+		status: 'unreviewed', 
+		statusOptions: {
+			0: 'init',
+			1: 'unreviewed',
+			2: 'review-denied',
+			3: 'review-pending',
+			4: 'review-accepted',
+			5: 'unbooked',
+			6: 'booked',
+			7: 'pending-customer',
+			8: 'booking-cancelled',
+			9: 'booking-reschedule-pending',
+			10: 'current',
+			11: 'finished',
+			12: 'pending',
+			13: 'error',
+		},
+		linkExpire: 'no',
 		
   };
-
   // Check if required fields are filled
   if (!data.name || !data.email || !data.phone || !data.carYear || !data.carMake || !data.carModel) {
     alert("Please fill in all required fields.");
     return null;
   }
-
   // Validate phone number (optional, but if filled, it should be a valid phone number)
   if (data.phone && !/^\d{10}$/.test(data.phone)) {
     alert("Please enter a valid phone number (10 digits).");
     return null;
   }
-
   // Validate car year (ensure it's a 4-digit number)
   if (!/^\d{4}$/.test(data.carYear)) {
     alert("Please enter a valid car year (4 digits).");
     return null;
   }
-
   return data;
 }
-
+/** Fetches the current customer count */
+async function getCustomerCount() {
+  try {
+	  const snapshot = await get(appData.ticketCount());
+	  if (!snapshot.exists()) {
+	    console.warn("Customer count not found in DB; returning default.");
+	    return 0;
+	  }
+	  return snapshot.val();
+	} catch (error) {
+	  console.error("Failed to fetch customer count:", error);
+	  return 0;  // Fallback to prevent cascading errors
+	}
+}
 /** Prepares customer data and increments ticket count */
 async function prepareCustomerData(formData) {
   try {
-    const ticketNumber = await getCustomerCount() + 1;
-    formData.ticketNumber = ticketNumber;
-
-    await update(ref(db, 'meta/customerCount'), { count: ticketNumber });
-    await set(ref(db, `customers/${ticketNumber}`), formData);
-
+    // Increment from last customer and assign to this customer
+    appData.customer.ticketNumber = await getCustomerCount() + 1;
+    console.log("Incremented ticket number " + appData.customer.ticketNumber);
+    formData.ticketNumber = appData.customer.ticketNumber;
+    try {
+      // Set the customer data in the database
+      await set(appData.customerRef(appData.customer.ticketNumber), formData);
+      console.log("Customer data set successfully.");
+      // Update ticket counter
+      try {
+        await update(appData.ticketCounter(), { count: appData.customer.ticketNumber });
+        console.log("Ticket counter updated successfully.");
+      } catch (updateError) {
+        console.error("Error updating ticket counter: " + updateError.message);
+      }
+    } catch (error) {
+      console.error("Error updating customer info: " + error.message);
+    }
     return formData;
   } catch (error) {
-    log("error", "Failed to prepare customer data", error);
-    throw error;
+    console.log("Error: Failed to prepare customer data", error.message);
+    throw error;  // Rethrow for further handling if needed
   }
 }
-
-/** Fetches the current customer count */
-async function getCustomerCount() {
-  const snapshot = await get(ref(db, 'meta/customerCount/count'));
+/** Fetches Pushcut webhook URL from Firebase */
+async function getPushcutWebhookUrl() {
+  const snapshot = await get(appData.pushcut_key);
+  console.log("pushcut url is: " + snapshot.val());
   if (!snapshot.exists()) {
-    return 0;
+    throw new Error("Pushcut webhook URL not found in the database.");
   }
   return snapshot.val();
 }
@@ -350,42 +387,54 @@ async function getCustomerCount() {
 async function sendPushcutNotification(customerData) {
   try {
     const pushcutWebhookUrl = await getPushcutWebhookUrl();
-
-    const response = await fetch(pushcutWebhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        title: `🚗 New Customer Lead - Ticket #${customerData.ticketNumber}`,
-        text: `**Name:** ${customerData.name}\n\n` +
-              `**Email:** [${customerData.email}](mailto:${customerData.email})\n\n` +
-              `**Phone:** [${customerData.phone}](tel:${customerData.phone})\n\n` +
-              `**Vehicle:** ${customerData.carYear} ${customerData.carMake} ${customerData.carModel} (${customerData.carTrim})\n\n` +
-              `**Comments:**\n${customerData.comments || "_No comments provided_"}\n\n` +
-              `***Submission Date:***\n${customerData.submitDate}\n\n`
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to send notification: ${response.statusText}`);
+    let retryAttempts = 3;
+    let success = false;
+    while (retryAttempts > 0 && !success) {
+      try {
+        const response = await fetch(pushcutWebhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: `🚗 New FixThings Customer Lead - #${customerData.ticketNumber}`,
+            text: `Name:\n${customerData.name}\n\n` +
+                  `Email:\n${customerData.email}\n\n` +
+                  `Phone:\n${customerData.phone}\n\n` +
+                  `Vehicle:\n${customerData.carYear} ${customerData.carMake} ${customerData.carModel} (${customerData.carTrim})\n\n` +
+                  `Comments:\n${customerData.comments}\n\n` +
+                  `Service:\n${customerData.service}\n\n` +
+                  `Submission Date:\n${customerData.submitDate}\n\n`,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to send notification: ${response.statusText}`);
+        }
+        log("info", "Sent Pushcut notification");
+        success = true;  // Success, break the loop
+      } catch (error) {
+        retryAttempts--;
+        console.error(`Error sending Pushcut notification. Retries left: ${retryAttempts}`);
+        if (retryAttempts === 0) {
+          console.error("Failed to send Pushcut notification after multiple attempts.");
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 2000));  // Retry after 2 seconds
+        }
+      }
     }
-
-    log("info", "Sent Pushcut notification");
   } catch (error) {
     log("error", "Failed to send Pushcut notification", error);
     throw error;
   }
 }
 
+/** Sends a confirmation email */
 async function sendConfirmationEmail(customerData) {
   try {
     const postmarkTempID = 'signup-email';
-
     if (!postmarkTempID) {
       throw new Error("Postmark Template ID is missing.");
     }
-
     const emailPayload = {
       To: customerData.email,
       TemplateAlias: postmarkTempID,
@@ -397,30 +446,48 @@ async function sendConfirmationEmail(customerData) {
         carModel: customerData.carModel,
         carYear: customerData.carYear,
         comments: customerData.comments || "None provided",
+        service: customerData.service,
         submit_date: customerData.submitDate,
       },
+      MessageStream: "customer-leads",
     };
-
-    const response = await fetch('https://fixthings.pro/api/', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(emailPayload),
-			mode: 'cors',
-    });
-
-    const responseBody = await response.text();
-
-    if (!response.ok) {
-      log("error", `Server error ${response.status}: ${responseBody}`, {
-        status: response.status,
-        responseBody,
-      });
-      throw new Error(`Server error: ${response.statusText}`);
+    let retryAttempts = 3;
+    let success = false;
+    while (retryAttempts > 0 && !success) {
+      try {
+        const response = await fetch(appData.api, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailPayload),
+          mode: 'cors',
+        });
+        const responseBody = await response.text();
+        if (!response.ok) {
+          log("error", `Server error ${response.status}: ${responseBody}`, {
+            status: response.status,
+            responseBody,
+          });
+          throw new Error(`Server error: ${response.statusText}`);
+        }
+        log("info", "Confirmation email sent successfully", { responseBody });
+        success = true;  // Success, break the loop
+      } catch (error) {
+        retryAttempts--;
+        console.error(`Error sending confirmation email. Retries left: ${retryAttempts}`);
+        if (retryAttempts === 0) {
+          console.error("Failed to send confirmation email after multiple attempts.");
+        } else {
+          // Retry after 2 seconds (or you can extend the delay if needed)
+          console.log("Retrying in 2 seconds...");
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
     }
-
-    log("info", "Confirmation email sent successfully", { responseBody });
+    if (!success) {
+      throw new Error("Failed to send the confirmation email after multiple retries.");
+    }
   } catch (error) {
     if (error.name === "TypeError") {
       // Likely a network or CORS issue
@@ -437,28 +504,29 @@ async function sendConfirmationEmail(customerData) {
     throw error;
   }
 }
-// /** Logs messages for debugging */
-// function log(level, ...messages) {
-//   console[level](...messages);
-// }
-
+// Helper Functions
 /** Fetches JSON from a URL */
 async function fetchJSON(url) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch JSON from ${url}`);
   }
+	console.log("fetchJSON Helper ran");
   return response.json();
 }
-
 /** Fetches plain text from a URL */
 async function fetchText(url) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch text from ${url}`);
   }
+	console.log("fetchText Helper ran");
   return response.text();
 }
+// /** Logs messages for debugging */
+// function log(level, ...messages) {
+//   console[level](...messages);
+// }
 //
 //
 //            Do Not Touch.            
@@ -475,48 +543,43 @@ function log(type, message, data = {}) {
     console.error(`[${new Date().toISOString()}] Invalid log type: ${type}`, { data });
   }
 }
-// Debugging function with button creation at the bottom of the script
-(function () {
-  // Function to auto-fill and submit the form with sample data
-  function autoFillFormAndSubmit() {
-    // Define sample data
-    const sampleData = {
-      name: "Kyle Martinez",
-      email: "rickgomez223@gmail.com",
-      phone: "1234567890",
-      carYear: "2014",
-      carMake: "Chevy",
-      carModel: "Cruze",
-      carTrim: "Eco",
-      comments: "Debugging form submission",
-    };
+// // Debugging function with button creation at the bottom of the script
+// (function () {
+//   // Function to auto-fill and submit the form with sample data
+//   function autoFillFormAndSubmit() {
+//     // Define sample data
+//     const sampleData = {
+//       name: "Kyle Martinez",
+//       email: "rickgomez223@gmail.com",
+//       phone: "1234567890",
+//       carYear: "2014",
+//       carMake: "Chevy",
+//       carModel: "Cruze",
+//       carTrim: "Eco",
+//       comments: "Debugging form submission",
+//     };
+//     // Fill out the form fields with sample data
+//     document.getElementById("name").value = sampleData.name;
+//     document.getElementById("email").value = sampleData.email;
+//     document.getElementById("phone").value = sampleData.phone;
+//     document.getElementById("car-year").value = sampleData.carYear;
+//     document.getElementById("car-make").value = sampleData.carMake;
+//     document.getElementById("car-model").value = sampleData.carModel;
+//     document.getElementById("car-trim").value = sampleData.carTrim;
+//     document.getElementById("comments").value = sampleData.comments;
 
-    // Fill out the form fields with sample data
-    document.getElementById("name").value = sampleData.name;
-    document.getElementById("email").value = sampleData.email;
-    document.getElementById("phone").value = sampleData.phone;
-    document.getElementById("car-year").value = sampleData.carYear;
-    document.getElementById("car-make").value = sampleData.carMake;
-    document.getElementById("car-model").value = sampleData.carModel;
-    document.getElementById("car-trim").value = sampleData.carTrim;
-    document.getElementById("comments").value = sampleData.comments;
-
-    // Log sample data for debugging
-    log("info", "Auto-filled form with sample data:", sampleData);
-
-    // Submit the form
-    document.getElementById("contact-form").dispatchEvent(new Event("submit"));
-  }
-
-  // Create a button to trigger the debugging function
-  const debugButton = document.createElement("button");
-  debugButton.textContent = "Auto-Fill Form and Submit";
-  debugButton.style.position = "fixed";
-  debugButton.style.top = "150px";
-  debugButton.style.right = "10px";
-  debugButton.onclick = autoFillFormAndSubmit;
-  document.body.appendChild(debugButton);
-})();
+//     // Log sample data for debugging
+//     log("info", "Auto-filled form with sample data:", sampleData);
+//   }
+//   // Create a button to trigger the debugging function
+//   const debugButton = document.createElement("button");
+//   debugButton.textContent = "Auto-Fill Form and Submit";
+//   debugButton.style.position = "fixed";
+//   debugButton.style.top = "150px";
+//   debugButton.style.right = "10px";
+//   debugButton.onclick = autoFillFormAndSubmit;
+//   document.body.appendChild(debugButton);
+// })();
 
 
 
