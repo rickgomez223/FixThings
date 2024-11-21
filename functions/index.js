@@ -2,9 +2,18 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const postmark = require('postmark');
 const cors = require('cors')({ origin: true }); // Allow all origins for now
+const cloudinary = require('cloudinary').v2;  // Cloudinary SDK
 
-admin.initializeApp();
+// Initialize Firebase Admin
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: "https://fixthings-db8b0-default-rtdb.firebaseio.com/" // Ensure the database URL is correct
+});
 
+const db = admin.database();  // Firebase Realtime Database reference
+const cloudinaryRef = db.ref('apiKeys');  // Realtime DB reference for Cloudinary config
+
+// Email Function using Postmark
 exports.emailCustomerLead = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {  // Apply CORS middleware here
     if (req.method !== 'POST') {
@@ -44,58 +53,46 @@ exports.emailCustomerLead = functions.https.onRequest((req, res) => {
   });
 });
 
-
-const cloudinary = require('cloudinary').v2;  // Cloudinary SDK
-
-
-
-// Firebase Realtime Database reference for Cloudinary config
-const db = admin.database();
-const cloudinaryRef = db.ref('apiKeys');
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),  // For default service account
-  databaseURL: "https://fixthings-db8b0-default-rtdb.firebaseio.com/" // Ensure the database URL is correct
-});
-
-const db = admin.database();
 // Firebase function to upload image to Cloudinary
 exports.uploadImageToCloudinary = functions.https.onRequest(async (req, res) => {
-  try {
-    // Check that the request is a POST and contains an image
-    if (req.method !== 'POST') {
-      return res.status(405).send('Method Not Allowed');
+  cors(req, res, async () => {  // Apply CORS middleware to the image upload function as well
+    try {
+      // Check that the request is a POST and contains an image
+      if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+      }
+
+      if (!req.body || !req.body.image) {
+        return res.status(400).send('No image provided');
+      }
+
+      const imageBase64 = req.body.image; // Base64 image string sent in the body
+
+      // Fetch Cloudinary keys from Realtime Database
+      const snapshot = await cloudinaryRef.once('value');
+      const cloudinaryConfig = snapshot.val();
+
+      if (!cloudinaryConfig || !cloudinaryConfig.cloud_name || !cloudinaryConfig.api_key || !cloudinaryConfig.api_secret) {
+        return res.status(500).send('Cloudinary configuration not found');
+      }
+
+      // Configure Cloudinary with the retrieved keys
+      cloudinary.config({
+        cloud_name: cloudinaryConfig.Cloudinary_Name,
+        api_key: cloudinaryConfig.Cloudinary_Key,
+        api_secret: cloudinaryConfig.Cloudinary_Secret,
+      });
+
+      // Upload the image to Cloudinary (no preset or unsigned upload)
+      const uploadResponse = await cloudinary.uploader.upload(imageBase64, {
+        folder: 'your-folder',  // Optional: Specify a folder in Cloudinary to store images
+      });
+
+      // Send back the Cloudinary URL after successful upload
+      return res.status(200).json({ url: uploadResponse.secure_url });
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      return res.status(500).send('Error uploading image');
     }
-
-    if (!req.body || !req.body.image) {
-      return res.status(400).send('No image provided');
-    }
-
-    const imageBase64 = req.body.image; // Base64 image string sent in the body
-
-    // Fetch Cloudinary keys from Realtime Database
-    const snapshot = await cloudinaryRef.once('value');
-    const cloudinaryConfig = snapshot.val();
-
-    if (!cloudinaryConfig || !cloudinaryConfig.cloud_name || !cloudinaryConfig.api_key || !cloudinaryConfig.api_secret) {
-      return res.status(500).send('Cloudinary configuration not found');
-    }
-
-    // Configure Cloudinary with the retrieved keys
-    cloudinary.config({
-      cloud_name: cloudinaryConfig.Cloudinary_Name,
-      api_key: cloudinaryConfig.Cloudinary_Key,
-      api_secret: cloudinaryConfig.Cloudinary_Secret,
-    });
-
-    // Upload the image to Cloudinary (no preset or unsigned upload)
-    const uploadResponse = await cloudinary.uploader.upload(imageBase64, {
-      folder: 'your-folder',  // Optional: Specify a folder in Cloudinary to store images
-    });
-
-    // Send back the Cloudinary URL after successful upload
-    return res.status(200).json({ url: uploadResponse.secure_url });
-  } catch (error) {
-    console.error('Error uploading to Cloudinary:', error);
-    return res.status(500).send('Error uploading image');
-  }
+  });
 });
