@@ -11,7 +11,6 @@ import {
   sendEmailVerification,
 	storage, storageRef, listAll, getDownloadURL
 } from "./src/firebase/FixThings-CustomerAppfirebaseConfig.js";
-
 // Global constants
 const appData = {
 	POSTMARK_Template_URL: "https://api.postmarkapp.com/email/withTemplate",
@@ -25,7 +24,6 @@ const appData = {
 		ticketNumber: '',
 		selectedService: document.querySelector("#servicesDropdown").value.trim(),
 	},
-	
 };
 // Start
 document.addEventListener("DOMContentLoaded", initializeApp);
@@ -37,7 +35,6 @@ const aboutMeTxt = document.getElementById("aboutMeTxt");
 const carouselSlide = document.querySelector(".carousel-slide");
 const carouselImg = document.querySelectorAll(".carousel-slide img");
 const pricingTxt = document.getElementById("pricingTxt");
-
 /** Initializes the app */
 async function initializeApp() {
   log("info", "Initializing App...");
@@ -92,27 +89,21 @@ function appendServiceToPricingTable(service) {
 /** Shows a popup with service details */
 function showServicePopup(event, service) {
   event.preventDefault();
-  
   const popup = document.getElementById("service-details-popup");
   const closeButton = popup.querySelector(".close-button");
-  
   // Set the content of the popup
   popup.querySelector("h2").textContent = service.service_name;
   popup.querySelector("p:nth-child(3)").textContent = service.description;
-  
   const expenseList = popup.querySelector("ul");
   expenseList.innerHTML = service.expenses
     .map((expense) => `<li>${expense.name}: $${expense.cost.toFixed(2)}</li>`)
     .join("");
-
   // Show the popup
-  popup.classList.remove("hidden");
-  
+  popup.classList.remove("hidden"); 
   // Close the popup when the close button is clicked
   closeButton.addEventListener("click", () => {
     popup.classList.add("hidden");
   });
-
   // Close the popup when clicking outside of it
   document.addEventListener("click", (e) => {
     if (!popup.contains(e.target) && !event.target.closest(".servicePopup")) {
@@ -130,9 +121,9 @@ async function loadAboutMe() {
   }
 }
 // Carousel variables
-let size = 0; // Width of each carousel item (in pixels)
 let counter = 0; // Tracks the current slide
 let carouselImages = []; // Stores the image URLs
+let carouselWidth = 0; // Tracks the dynamic width of the carousel container
 
 /** Loads the image carousel dynamically from Firebase Storage */
 async function loadCarousel() {
@@ -148,7 +139,7 @@ async function loadCarousel() {
     if (res.items.length === 0) {
       // No images found
       carouselSlide.style.display = "none";
-      log("info", "No images found in Firebase Storage. Hiding carousel.");
+      console.log("No images found in Firebase Storage. Hiding carousel.");
       return;
     }
 
@@ -159,7 +150,7 @@ async function loadCarousel() {
 
     if (imageUrls.length === 0) {
       carouselSlide.style.display = "none";
-      log("info", "No valid image URLs found. Hiding carousel.");
+      console.log("No valid image URLs found. Hiding carousel.");
       return;
     }
 
@@ -167,50 +158,62 @@ async function loadCarousel() {
     carouselSlide.innerHTML = ""; // Clear existing images
 
     // Append new images to the carousel
-    await Promise.all(
+    const imageElements = await Promise.all(
       carouselImages.map((url) => {
         return new Promise((resolve) => {
           const img = document.createElement("img");
           img.src = url;
           img.alt = "Carousel Image";
-          img.onload = () => {
-            if (!size) size = img.width; // Set size based on the first image
-            resolve();
-          };
+          img.style.objectFit = "cover"; // Ensure consistent sizing
+          img.onload = () => resolve(img);
           carouselSlide.appendChild(img);
         });
       })
     );
 
+    // Dynamically set the width of the carousel
+    carouselWidth = carouselSlide.offsetWidth;
+    carouselSlide.style.width = `${carouselWidth * imageElements.length}px`;
+
+    // Set each image to match the carousel's container dimensions
+    imageElements.forEach((img) => {
+      img.style.width = `${carouselWidth}px`;
+      img.style.height = "auto";
+    });
+
     // Start carousel auto-slide
     setInterval(() => {
       if (carouselImages.length === 0) return;
       counter = (counter + 1) % carouselImages.length;
-      carouselSlide.style.transform = `translateX(${-size * counter}px)`;
-    }, 3000);
+      updateCarouselPosition();
+    }, 5000);
 
     // Set up Next/Prev button functionality
     setupCarouselControls();
   } catch (error) {
-    log("error", `Failed to load carousel: ${error.message}`, error);
+    console.error(`Failed to load carousel: ${error.message}`);
   }
+}
+
+/** Updates the carousel's position based on the current counter */
+function updateCarouselPosition() {
+  carouselSlide.style.transition = "transform 0.5s ease-in-out";
+  carouselSlide.style.transform = `translateX(${-carouselWidth * counter}px)`;
 }
 
 /** Sets up event listeners for carousel navigation buttons */
 function setupCarouselControls() {
   const nextBtn = document.getElementById("nextBtn");
   const prevBtn = document.getElementById("prevBtn");
-
   if (nextBtn) {
-    nextBtn.addEventListener("click", nextImage);
+    nextBtn.addEventListener("touchend", nextImage);
   } else {
-    log("warn", "Next button not found");
+    console.warn("Next button not found");
   }
-
   if (prevBtn) {
-    prevBtn.addEventListener("click", prevImage);
+    prevBtn.addEventListener("touchend", prevImage);
   } else {
-    log("warn", "Previous button not found");
+    console.warn("Previous button not found");
   }
 }
 
@@ -218,14 +221,14 @@ function setupCarouselControls() {
 function nextImage() {
   if (carouselImages.length === 0) return;
   counter = (counter + 1) % carouselImages.length;
-  carouselSlide.style.transform = `translateX(${-size * counter}px)`;
+  updateCarouselPosition();
 }
 
 /** Moves to the previous image in the carousel */
 function prevImage() {
   if (carouselImages.length === 0) return;
   counter = (counter - 1 + carouselImages.length) % carouselImages.length;
-  carouselSlide.style.transform = `translateX(${-size * counter}px)`;
+  updateCarouselPosition();
 }
 /** Loads pricing text */
 async function loadPricingText() {
@@ -252,13 +255,9 @@ async function handleFormSubmit(event) {
   try {
     const formData = await collectFormData();
     if (!formData) return;
-		
 		await prepareCustomerData(formData);
-		
 		await sendConfirmationEmail(formData);
-    
     await sendPushcutNotification(formData);
-   
     document.getElementById("contact-form").reset();
     alert("Thank you for your submission!");
   } catch (error) {
@@ -291,9 +290,7 @@ async function collectFormData() {
     carTrim: document.getElementById("car-trim").value.trim(),
     comments: document.getElementById("comments").value.trim(),
 		service: document.querySelector("#servicesDropdown")?.value.trim(),
-    submitDate: formatDate(new Date()),  // Returns something like "11-12-2024 03:45 PM"
-		booked: 'no',
-		bookingEmail: 'no',
+    submitDate: formatDate(new Date()),  
 		reviewed: 'no',
 		status: 'unreviewed', 
 		statusOptions: {
@@ -313,10 +310,15 @@ async function collectFormData() {
 			13: 'error',
 		},
 		linkExpire: 'no',
+		booking: {
+			bookingLink: 'no',
+			bookingEmail: 'no',
+			booked: 'no',
+		},
 		
   };
   // Check if required fields are filled
-  if (!data.name || !data.email || !data.phone || !data.carYear || !data.carMake || !data.carModel) {
+  if ( !data.name || !data.email || !data.phone || !data.carYear || !data.carMake || !data.carModel || !data.service ) {
     alert("Please fill in all required fields.");
     return null;
   }
@@ -330,6 +332,13 @@ async function collectFormData() {
     alert("Please enter a valid car year (4 digits).");
     return null;
   }
+	// Check for duplicate customer
+  const isDuplicate = await isDuplicateCustomer(data.email, data.phone);
+  if (isDuplicate) {
+    alert("A customer with this email or phone number already exists.");
+    return null; // Stop further processing
+  }
+
   return data;
 }
 /** Fetches the current customer count */
@@ -345,6 +354,30 @@ async function getCustomerCount() {
 	  console.error("Failed to fetch customer count:", error);
 	  return 0;  // Fallback to prevent cascading errors
 	}
+}
+/** Checks if email or phone already exists in the database */
+async function isDuplicateCustomer(email, phone) {
+  try {
+    const snapshot = await get(appData.customerListRef()); // Fetch the entire customer list or use a query to limit
+    if (!snapshot.exists()) {
+      console.log("No existing customers found in DB.");
+      return false; // No duplicates since DB is empty
+    }
+
+    const customers = snapshot.val(); // Retrieve customer data
+    for (const key in customers) {
+      const customer = customers[key];
+      if (customer.email === email || customer.phone === phone) {
+        console.warn("Duplicate found:", customer);
+        return true; // Duplicate detected
+      }
+    }
+
+    return false; // No duplicates
+  } catch (error) {
+    console.error("Error checking for duplicates:", error);
+    return true; // Fail-safe: treat it as duplicate to prevent errors
+  }
 }
 /** Prepares customer data and increments ticket count */
 async function prepareCustomerData(formData) {
