@@ -71,8 +71,12 @@ function addToDropdown(service) {
 }
 /** Appends a service to the services list */
 function appendServiceToList(service) {
+  if (service.service_name === "Something Else") {
+    return; // Skip "Something Else"
+  }
+
   const listItem = document.createElement("li");
-  listItem.textContent = service.service_name; // Fixed key
+  listItem.textContent = service.service_name; // Add the service name
   servicesList.appendChild(listItem);
 }
 /** Appends a service to the pricing table */
@@ -123,7 +127,7 @@ async function loadAboutMe() {
 // Carousel variables
 let counter = 0; // Tracks the current slide
 let carouselImages = []; // Stores the image URLs
-let carouselWidth = 0; // Tracks the dynamic width of the carousel container
+
 
 /** Loads the image carousel dynamically from Firebase Storage */
 async function loadCarousel() {
@@ -138,7 +142,7 @@ async function loadCarousel() {
 
     if (res.items.length === 0) {
       // No images found
-      carouselSlide.style.display = "none";
+      hideCarousel(); // Hide the carousel if no images are found
       console.log("No images found in Firebase Storage. Hiding carousel.");
       return;
     }
@@ -149,7 +153,7 @@ async function loadCarousel() {
     );
 
     if (imageUrls.length === 0) {
-      carouselSlide.style.display = "none";
+      hideCarousel(); // Hide the carousel if no valid image URLs are found
       console.log("No valid image URLs found. Hiding carousel.");
       return;
     }
@@ -158,60 +162,74 @@ async function loadCarousel() {
     carouselSlide.innerHTML = ""; // Clear existing images
 
     // Append new images to the carousel
-    const imageElements = await Promise.all(
-      carouselImages.map((url) => {
-        return new Promise((resolve) => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.alt = "Carousel Image";
-          img.style.objectFit = "cover"; // Ensure consistent sizing
-          img.onload = () => resolve(img);
-          carouselSlide.appendChild(img);
-        });
-      })
-    );
-
-    // Dynamically set the width of the carousel
-    carouselWidth = carouselSlide.offsetWidth;
-    carouselSlide.style.width = `${carouselWidth * imageElements.length}px`;
-
-    // Set each image to match the carousel's container dimensions
-    imageElements.forEach((img) => {
-      img.style.width = `${carouselWidth}px`;
+    carouselImages.forEach((url, index) => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Carousel Image";
+      img.style.objectFit = "cover"; // Ensure consistent sizing
+      img.style.position = "absolute"; // Stack images on top of each other
+      img.style.top = 0;
+      img.style.left = 0;
+      img.style.width = "100%";
       img.style.height = "auto";
+      img.style.display = index === 0 ? "block" : "none"; // Only show the first image initially
+      carouselSlide.appendChild(img);
     });
+
+    showCarousel(); // Show the carousel once images are loaded
 
     // Start carousel auto-slide
     setInterval(() => {
       if (carouselImages.length === 0) return;
-      counter = (counter + 1) % carouselImages.length;
-      updateCarouselPosition();
+      toggleImages(); // Toggle images every 5 seconds
     }, 5000);
 
-    // Set up Next/Prev button functionality
-    setupCarouselControls();
+    // Set up cycle button functionality
+    setupCycleButtons();
+    
   } catch (error) {
     console.error(`Failed to load carousel: ${error.message}`);
+    hideCarousel(); // Hide carousel if an error occurs
   }
 }
 
-/** Updates the carousel's position based on the current counter */
-function updateCarouselPosition() {
-  carouselSlide.style.transition = "transform 0.5s ease-in-out";
-  carouselSlide.style.transform = `translateX(${-carouselWidth * counter}px)`;
+/** Show the carousel */
+function showCarousel() {
+  carouselSlide.style.display = "block"; // or 'flex' if you want flexbox behavior
 }
 
-/** Sets up event listeners for carousel navigation buttons */
-function setupCarouselControls() {
+/** Hide the carousel */
+function hideCarousel() {
+  carouselSlide.style.display = "none";
+}
+
+/** Toggles the visibility of the images */
+function toggleImages() {
+  const images = carouselSlide.getElementsByTagName("img");
+
+  // Hide the current image
+  images[counter].style.display = "none";
+
+  // Increment the counter (move to the next image)
+  counter = (counter + 1) % carouselImages.length;
+
+  // Show the next image
+  images[counter].style.display = "block";
+}
+
+/** Set up the cycle buttons for manual navigation */
+function setupCycleButtons() {
   const nextBtn = document.getElementById("nextBtn");
   const prevBtn = document.getElementById("prevBtn");
+
   if (nextBtn) {
-    nextBtn.addEventListener("touchend", nextImage);
+    nextBtn.addEventListener("click", nextImage); // Next button cycles to next image
   } else {
     console.warn("Next button not found");
   }
+
   if (prevBtn) {
-    prevBtn.addEventListener("touchend", prevImage);
+    prevBtn.addEventListener("click", prevImage); // Previous button cycles to previous image
   } else {
     console.warn("Previous button not found");
   }
@@ -220,15 +238,29 @@ function setupCarouselControls() {
 /** Advances to the next image in the carousel */
 function nextImage() {
   if (carouselImages.length === 0) return;
+  // Hide the current image
+  const images = carouselSlide.getElementsByTagName("img");
+  images[counter].style.display = "none";
+
+  // Increment counter (move to the next image)
   counter = (counter + 1) % carouselImages.length;
-  updateCarouselPosition();
+
+  // Show the next image
+  images[counter].style.display = "block";
 }
 
 /** Moves to the previous image in the carousel */
 function prevImage() {
   if (carouselImages.length === 0) return;
+  // Hide the current image
+  const images = carouselSlide.getElementsByTagName("img");
+  images[counter].style.display = "none";
+
+  // Decrement counter (move to the previous image)
   counter = (counter - 1 + carouselImages.length) % carouselImages.length;
-  updateCarouselPosition();
+
+  // Show the previous image
+  images[counter].style.display = "block";
 }
 /** Loads pricing text */
 async function loadPricingText() {

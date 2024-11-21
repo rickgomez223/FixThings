@@ -73,6 +73,7 @@ body {
 
 .carousel-slide img:nth-child(2) {
   transform: rotate(90deg);
+	object-fit: cover;
 }
 
 .carousel-btn {
