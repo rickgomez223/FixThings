@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getAuth, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { getDatabase, ref as databaseRef, set, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-import { getStorage, ref as storageRef, listAll, getDownloadURL, uploadBytes } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+import { getStorage, ref as storageRef, listAll, getDownloadURL, uploadBytes, getBlob } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
 
 // Your web app's Firebase configuration
@@ -42,6 +42,7 @@ export {
 	getDownloadURL,
 	onValue,
 	uploadBytes,
+	getBlob,
 };
 
 

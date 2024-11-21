@@ -30,15 +30,15 @@
   
   <div id="controls">
     <label for="crop">Crop (e.g., "fill"):</label>
-    <input type="text" id="crop" value="">
+    <input type="text" id="crop" value="fill">
     
     <label for="aspect-ratio">Aspect Ratio (e.g., "3:1"):</label>
     <input type="text" id="aspect-ratio" value="3:1">
     
     <label for="rotate">Rotate (degrees):</label>
-    <input type="number" id="rotate" value="">
+    <input type="number" id="rotate" value="0">
     
-    <button id="transform">Transform &amp; Save</button>
+    <button id="transform">Transform & Save</button>
   </div>
   
   <canvas id="canvas"></canvas>
@@ -52,7 +52,7 @@
       storage,
       storageRef,
       listAll,
-      getDownloadURL,
+      getBlob, // Use getBlob instead of getDownloadURL
       uploadBytes
     } from "../firebase/FixThings-CustomerAppfirebaseConfig.js";
 
@@ -68,37 +68,55 @@
     let selectedImageUrl = "";
     let originalImage = new Image();
 
+    // Log the status at various points
+    function log(message) {
+      console.log(`[LOG]: ${message}`);
+    }
+
     // Fetch Images from Firebase Storage
     async function fetchImages() {
+      log("Fetching images from Firebase Storage...");
       try {
         const folderRef = storageRef(storage, "site/images/banner");
         const { items } = await listAll(folderRef);
+        log(`Found ${items.length} images in Firebase Storage.`);
 
         items.forEach(async (itemRef) => {
           try {
-            const url = await getDownloadURL(itemRef);
+            const blob = await getBlob(itemRef); // Fetch the image as a Blob
+            log(`Fetched image blob for: ${itemRef.name}`);
+
+            // Create an object URL for the Blob
+            const url = URL.createObjectURL(blob);
 
             const img = new Image();
-img.crossOrigin = "anonymous"; // Add this line to allow cross-origin access
-img.src = url;
+            img.crossOrigin = "anonymous"; // Allow cross-origin access
+            img.src = url;
             img.addEventListener("click", () => {
-              document.querySelectorAll(".image-container img").forEach((img) => img.classList.remove("selected"));
-              img.classList.add("selected");
-              selectedImageUrl = url;
-              loadImageToCanvas(url);
+              selectImage(img, url);
             });
             imageContainer.appendChild(img);
           } catch (error) {
-            console.error("Error fetching image URL:", error.message);
+            logError("Error fetching image blob", error);
           }
         });
       } catch (error) {
-        console.error("Error listing images from Firebase Storage:", error.message);
+        logError("Error listing images from Firebase Storage", error);
       }
+    }
+
+    // Handle image selection
+    function selectImage(img, url) {
+      log(`Image selected: ${url}`);
+      document.querySelectorAll(".image-container img").forEach((img) => img.classList.remove("selected"));
+      img.classList.add("selected");
+      selectedImageUrl = url;
+      loadImageToCanvas(url);
     }
 
     // Load image to canvas for editing
     function loadImageToCanvas(url) {
+      log(`Loading image into canvas: ${url}`);
       originalImage.src = url;
       originalImage.onload = () => {
         canvas.width = originalImage.width;
@@ -107,10 +125,12 @@ img.src = url;
       };
     }
 
-    // Transform and Save Image
+    // Transform and save the image
     transformButton.addEventListener("click", async () => {
+      log("Transform & Save button clicked.");
       try {
         if (!selectedImageUrl) {
+          log("No image selected.");
           alert("Please select an image.");
           return;
         }
@@ -119,54 +139,92 @@ img.src = url;
         const aspectRatio = aspectRatioInput.value;
         const rotate = parseInt(rotateInput.value, 10);
 
-        // Apply transformations on canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
+        log(`Applying transformations: Crop = ${crop}, Aspect Ratio = ${aspectRatio}, Rotate = ${rotate} degrees`);
 
-        // Apply rotation
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((rotate * Math.PI) / 180);
-        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        // Apply transformations on canvas (optional, for preview)
+        applyTransformations(crop, aspectRatio, rotate);
 
-        // Apply crop and aspect ratio
-        if (crop === "fill") {
-          const [width, height] = aspectRatio.split(":").map(Number);
-          const imageAspectRatio = originalImage.width / originalImage.height;
-          let cropWidth = originalImage.width;
-          let cropHeight = originalImage.height;
+        // Convert canvas to base64
+        const transformedImageBase64 = canvas.toDataURL("image/jpeg");
+        log("Image transformed to base64.");
 
-          if (imageAspectRatio > width / height) {
-            cropWidth = originalImage.height * (width / height);
-          } else {
-            cropHeight = originalImage.width * (height / width);
-          }
+        // Upload the transformed image
+        await uploadTransformedImage(transformedImageBase64, crop, aspectRatio, rotate);
 
-          ctx.drawImage(originalImage, 0, 0, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
-        } else {
-          ctx.drawImage(originalImage, 0, 0);
-        }
-
-        ctx.restore();
-
-        canvas.toBlob(async (blob) => {
-  if (!blob) {
-    console.error("Failed to generate blob from canvas");
-    return;
-  }
-
-  const transformedRef = storageRef(storage, `transformed-images/${Date.now()}-transformed.jpg`);
-  try {
-    await uploadBytes(transformedRef, blob);
-    alert("Image transformed and saved to Firebase!");
-  } catch (error) {
-    console.error("Error uploading transformed image:", error.message);
-  }
-});
       } catch (error) {
-        console.error("Error during image transformation and save:", error.message);
+        logError("Error during image transformation and save", error);
         alert(`Error: ${error.message}`);
       }
     });
+
+    // Apply transformations on the canvas
+    function applyTransformations(crop, aspectRatio, rotate) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+
+      // Apply rotation
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotate * Math.PI) / 180);
+      ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+      // Apply crop and aspect ratio
+      if (crop === "fill") {
+        log("Applying crop and aspect ratio...");
+        const [width, height] = aspectRatio.split(":").map(Number);
+        const imageAspectRatio = originalImage.width / originalImage.height;
+        let cropWidth = originalImage.width;
+        let cropHeight = originalImage.height;
+
+        if (imageAspectRatio > width / height) {
+          cropWidth = originalImage.height * (width / height);
+        } else {
+          cropHeight = originalImage.width * (height / width);
+        }
+
+        ctx.drawImage(originalImage, 0, 0, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.drawImage(originalImage, 0, 0);
+      }
+
+      ctx.restore();
+      log("Transformations applied.");
+    }
+
+    // Function to upload the transformed image
+    async function uploadTransformedImage(base64Image, crop, aspectRatio, rotate) {
+      log("Uploading transformed image...");
+      try {
+        const response = await fetch('https://fixthings.pro/editImage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: base64Image.split(',')[1],  // Remove base64 header part
+            crop: crop,
+            aspectRatio: aspectRatio,
+            rotate: rotate
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          log(`Image uploaded successfully. URL: ${data.url}`);
+          alert("Image transformed and saved to Cloudinary: " + data.url);
+        } else {
+          logError("Error uploading image", response);
+          alert("Error uploading image: " + response.statusText);
+        }
+      } catch (error) {
+        logError("Error uploading to Cloudinary", error);
+        alert("Error uploading image to Cloudinary.");
+      }
+    }
+
+    // Handle errors with logs
+    function logError(message, error) {
+      console.error(`[ERROR]: ${message}`, error);
+    }
 
     // Initialize
     fetchImages();
