@@ -30,15 +30,15 @@
   
   <div id="controls">
     <label for="crop">Crop (e.g., "fill"):</label>
-    <input type="text" id="crop" value="fill">
+    <input type="text" id="crop" value="">
     
     <label for="aspect-ratio">Aspect Ratio (e.g., "3:1"):</label>
     <input type="text" id="aspect-ratio" value="3:1">
     
     <label for="rotate">Rotate (degrees):</label>
-    <input type="number" id="rotate" value="0">
+    <input type="number" id="rotate" value="">
     
-    <button id="transform">Transform & Save</button>
+    <button id="transform">Transform &amp; Save</button>
   </div>
   
   <canvas id="canvas"></canvas>
@@ -78,8 +78,9 @@
           try {
             const url = await getDownloadURL(itemRef);
 
-            const img = document.createElement("img");
-            img.src = url;
+            const img = new Image();
+img.crossOrigin = "anonymous"; // Add this line to allow cross-origin access
+img.src = url;
             img.addEventListener("click", () => {
               document.querySelectorAll(".image-container img").forEach((img) => img.classList.remove("selected"));
               img.classList.add("selected");
@@ -147,17 +148,20 @@
 
         ctx.restore();
 
-        // Get the edited image as a Blob
         canvas.toBlob(async (blob) => {
-          if (!blob) {
-            console.error("Failed to generate blob from canvas");
-            return;
-          }
+  if (!blob) {
+    console.error("Failed to generate blob from canvas");
+    return;
+  }
 
-          const transformedRef = storageRef(storage, `transformed-images/${Date.now()}-transformed.jpg`);
-          await uploadBytes(transformedRef, blob);
-          alert("Image transformed and saved to Firebase!");
-        });
+  const transformedRef = storageRef(storage, `transformed-images/${Date.now()}-transformed.jpg`);
+  try {
+    await uploadBytes(transformedRef, blob);
+    alert("Image transformed and saved to Firebase!");
+  } catch (error) {
+    console.error("Error uploading transformed image:", error.message);
+  }
+});
       } catch (error) {
         console.error("Error during image transformation and save:", error.message);
         alert(`Error: ${error.message}`);

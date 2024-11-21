@@ -12,8 +12,12 @@
     ],
     "rewrites": [
       {
-        "source": "/api",
+        "source": "/email",
         "function": "emailCustomerLead" // Redirect to Firebase Function
+      },
+			{
+        "source": "/editImage",
+        "function": "uploadImageToCloudinary" // Redirect to Firebase Function
       },
       {
         "source": "/app",
