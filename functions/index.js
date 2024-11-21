@@ -52,7 +52,12 @@ const cloudinary = require('cloudinary').v2;  // Cloudinary SDK
 // Firebase Realtime Database reference for Cloudinary config
 const db = admin.database();
 const cloudinaryRef = db.ref('apiKeys');
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),  // For default service account
+  databaseURL: "https://fixthings-db8b0-default-rtdb.firebaseio.com/" // Ensure the database URL is correct
+});
 
+const db = admin.database();
 // Firebase function to upload image to Cloudinary
 exports.uploadImageToCloudinary = functions.https.onRequest(async (req, res) => {
   try {
