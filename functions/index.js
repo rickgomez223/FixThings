@@ -53,9 +53,9 @@ exports.emailCustomerLead = functions.https.onRequest((req, res) => {
   });
 });
 
-// Firebase function to upload image to Cloudinary
+// Firebase function to upload image to Cloudinary with transformations
 exports.uploadImageToCloudinary = functions.https.onRequest(async (req, res) => {
-  cors(req, res, async () => {  // Apply CORS middleware to the image upload function as well
+  cors(req, res, async () => {  // Apply CORS middleware here
     try {
       // Check that the request is a POST and contains an image
       if (req.method !== 'POST') {
@@ -67,6 +67,9 @@ exports.uploadImageToCloudinary = functions.https.onRequest(async (req, res) => 
       }
 
       const imageBase64 = req.body.image; // Base64 image string sent in the body
+      const crop = req.body.crop || 'fill'; // Default crop method
+      const aspectRatio = req.body.aspectRatio || '1:1'; // Default aspect ratio
+      const rotate = req.body.rotate || 0; // Default rotation
 
       // Fetch Cloudinary keys from Realtime Database
       const snapshot = await cloudinaryRef.once('value');
@@ -83,9 +86,33 @@ exports.uploadImageToCloudinary = functions.https.onRequest(async (req, res) => 
         api_secret: cloudinaryConfig.Cloudinary_Secret,
       });
 
-      // Upload the image to Cloudinary (no preset or unsigned upload)
+      // Build transformation options
+      let transformations = [];
+
+      // Add crop transformation
+      if (crop === 'fill') {
+        transformations.push('c_fill');
+      } else if (crop === 'fit') {
+        transformations.push('c_fit');
+      } else if (crop === 'pad') {
+        transformations.push('c_pad');
+      } else {
+        transformations.push('c_scale');  // Default: scale
+      }
+
+      // Add aspect ratio (width and height) transformation
+      const [width, height] = aspectRatio.split(':').map(Number);
+      transformations.push(`ar_${width}:${height}`);
+
+      // Add rotation transformation
+      if (rotate !== 0) {
+        transformations.push(`a_${rotate}`);
+      }
+
+      // Upload the image to Cloudinary with transformations
       const uploadResponse = await cloudinary.uploader.upload(imageBase64, {
         folder: 'your-folder',  // Optional: Specify a folder in Cloudinary to store images
+        transformation: transformations.join(','),
       });
 
       // Send back the Cloudinary URL after successful upload
