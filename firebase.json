@@ -13,26 +13,26 @@
     "rewrites": [
       {
         "source": "/email",
-        "function": "emailCustomerLead" // Redirect to Firebase Function
+        "function": "emailCustomerLead"
       },
-			{
+      {
         "source": "/editImage",
-        "function": "uploadImageToCloudinary" // Redirect to Firebase Function
+        "function": "uploadImageToCloudinary"
       },
       {
         "source": "/app",
-        "destination": "/app/app.html" // Redirect to static file
+        "destination": "/app/app.html"
       },
       {
         "source": "/calendar",
-        "destination": "/src/calendar/calendar.html" // Catch-all for SPA routing
+        "destination": "/src/calendar/calendar.html"
       },
       {
         "source": "**",
-        "destination": "/index.html" // Catch-all for SPA routing
-      } 
+        "destination": "/index.html"
+      }
     ]
-},
+  },
   "storage": {
     "rules": "storage.rules"
   },
@@ -52,6 +52,20 @@
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local"
+      ]
+    },
+    {
+      "source": "postmark",
+      "codebase": "postmark",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
   ]
