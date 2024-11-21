@@ -19,7 +19,7 @@ const appData = {
 	ticketCounter: () => ref(db, 'meta/customerCount'),
 	customerRef: (ticketNumber) => ref(db, `customers/${ticketNumber}`),
 	ticketCount: () => ref(db, 'meta/customerCount/count'),
-	api: "https://fixthings.pro/api/",
+	api: "https://emailcustomerlead-77757u6a6q-uc.a.run.app",
 	customer: {
 		ticketNumber: '',
 		selectedService: document.querySelector("#servicesDropdown").value.trim(),
