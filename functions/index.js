@@ -11,11 +11,11 @@ admin.initializeApp({
 });
 
 const db = admin.database();  // Firebase Realtime Database reference
-const cloudinaryRef = db.ref('apiKeys');  // Realtime DB reference for Cloudinary config
+const apiKeysRef = admin.database().ref('apiKeys');  // Firebase Realtime DB reference for API keys
 
 // Email Function using Postmark
 exports.emailCustomerLead = functions.https.onRequest((req, res) => {
-  cors(req, res, async () => {  // Apply CORS middleware here
+  cors(req, res, async () => {
     if (req.method !== 'POST') {
       return res.status(405).send({ message: 'Only POST requests are accepted' });
     }
@@ -27,13 +27,15 @@ exports.emailCustomerLead = functions.https.onRequest((req, res) => {
     }
 
     try {
-      const snapshot = await admin.database().ref('apiKeys/POSTMARK_SERVER_KEY').once('value');
-      const postmarkKey = snapshot.val();
-
-      if (!postmarkKey) {
-        throw new Error('Postmark API key not found in Realtime Database');
+      // Fetch Postmark API key from Firebase Realtime Database
+      const snapshot = await apiKeysRef.once('value');
+      const apiKeys = snapshot.val();
+      
+      if (!apiKeys || !apiKeys.POSTMARK_SERVER_KEY) {
+        return res.status(500).send('Postmark API key not found');
       }
 
+      const postmarkKey = apiKeys.POSTMARK_SERVER_KEY;
       const client = new postmark.ServerClient(postmarkKey);
 
       const emailResponse = await client.sendEmailWithTemplate({
@@ -72,18 +74,18 @@ exports.uploadImageToCloudinary = functions.https.onRequest(async (req, res) => 
       const rotate = req.body.rotate || 0; // Default rotation
 
       // Fetch Cloudinary keys from Realtime Database
-      const snapshot = await cloudinaryRef.once('value');
-      const cloudinaryConfig = snapshot.val();
+      const snapshot = await apiKeysRef.once('value');
+      const apiKeys = snapshot.val();
 
-      if (!cloudinaryConfig || !cloudinaryConfig.cloud_name || !cloudinaryConfig.api_key || !cloudinaryConfig.api_secret) {
+      if (!apiKeys || !apiKeys.Cloudinary_Name || !apiKeys.Cloudinary_Key || !apiKeys.Cloudinary_Secret) {
         return res.status(500).send('Cloudinary configuration not found');
       }
 
       // Configure Cloudinary with the retrieved keys
       cloudinary.config({
-        cloud_name: cloudinaryConfig.Cloudinary_Name,
-        api_key: cloudinaryConfig.Cloudinary_Key,
-        api_secret: cloudinaryConfig.Cloudinary_Secret,
+        cloud_name: apiKeys.Cloudinary_Name,
+        api_key: apiKeys.Cloudinary_Key,
+        api_secret: apiKeys.Cloudinary_Secret,
       });
 
       // Build transformation options

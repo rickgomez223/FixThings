@@ -191,35 +191,43 @@
     }
 
     // Function to upload the transformed image
-    async function uploadTransformedImage(base64Image, crop, aspectRatio, rotate) {
-      log("Uploading transformed image...");
-      try {
-        const response = await fetch('https://fixthings.pro/editImage', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            image: base64Image.split(',')[1],  // Remove base64 header part
-            crop: crop,
-            aspectRatio: aspectRatio,
-            rotate: rotate
-          })
-        });
+async function uploadTransformedImage(base64Image, crop, aspectRatio, rotate) {
+  console.log("Uploading transformed image...");
 
-        if (response.ok) {
-          const data = await response.json();
-          log(`Image uploaded successfully. URL: ${data.url}`);
-          alert("Image transformed and saved to Cloudinary: " + data.url);
-        } else {
-          logError("Error uploading image", response);
-          alert("Error uploading image: " + response.statusText);
-        }
-      } catch (error) {
-        logError("Error uploading to Cloudinary", error);
-        alert("Error uploading image to Cloudinary.");
-      }
+  try {
+    // Ensure the base64 image is properly formatted
+    const imageData = base64Image.split(',')[1]; // Remove base64 header part if present
+
+    const response = await fetch('https://fixthings.pro/editImage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image: imageData,  // Pass only the base64 string part
+        crop: crop,
+        aspectRatio: aspectRatio,
+        rotate: rotate
+      })
+    });
+
+    // Check if the response was successful
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`Image uploaded successfully. URL: ${data.url}`);
+      alert("Image transformed and saved to Cloudinary: " + data.url);
+    } else {
+      // Fetch the error message if the response is not successful
+      const errorText = await response.text();
+      console.error(`Error uploading image. Status: ${response.status} - ${errorText}`);
+      alert(`Error uploading image: ${response.status} - ${errorText}`);
     }
+  } catch (error) {
+    // Log and alert in case of a network or unexpected error
+    console.error("Error uploading to Cloudinary:", error);
+    alert("Error uploading image to Cloudinary.");
+  }
+}
 
     // Handle errors with logs
     function logError(message, error) {
