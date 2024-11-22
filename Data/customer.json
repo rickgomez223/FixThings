@@ -1,0 +1,26 @@
+{
+  "reviewed": "no",
+  "status": "unreviewed",
+  "statusOptions": {
+    "0": "init",
+    "1": "unreviewed",
+    "2": "review-denied",
+    "3": "review-pending",
+    "4": "review-accepted",
+    "5": "unbooked",
+    "6": "booked",
+    "7": "pending-customer",
+    "8": "booking-cancelled",
+    "9": "booking-reschedule-pending",
+    "10": "current",
+    "11": "finished",
+    "12": "pending",
+    "13": "error"
+  },
+  "linkExpire": "no",
+  "booking": {
+    "bookingLink": "no",
+    "bookingEmail": "no",
+    "booked": "no"
+  }
+}
