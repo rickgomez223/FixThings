@@ -1,7 +1,7 @@
 {
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "Firebase/firestore.rules",
+    "indexes": "Firebase/firestore.indexes.json"
   },
   "hosting": {
     "public": "public",
@@ -34,17 +34,17 @@
     ]
   },
   "storage": {
-    "rules": "storage.rules"
+    "rules": "Firebase/storage.rules"
   },
   "remoteconfig": {
-    "template": "remoteconfig.template.json"
+    "template": "Firebase/remoteconfig.template.json"
   },
   "database": {
-    "rules": "database.rules.json"
+    "rules": "Firebase/database.rules.json"
   },
   "functions": [
     {
-      "source": "postmark",
+      "source": "Functions/postmarkFunction",
       "codebase": "postmark",
       "ignore": [
         "node_modules",
@@ -55,7 +55,7 @@
       ]
     },
     {
-      "source": "functions",
+      "source": "Functions/functions",
       "codebase": "functions",
       "ignore": [
         "node_modules",
