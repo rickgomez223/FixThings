@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "@google-cloud/functions": "^3.6.0",
-    "axios": "^1.7.7",
     "firebase": "^11.0.1",
     "node-fetch": "^3.3.2"
   },
